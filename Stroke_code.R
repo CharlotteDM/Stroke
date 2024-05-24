@@ -2,6 +2,7 @@
 library("dplyr")
 library("skimr")
 library("DataExplorer")
+library("corrplot")
 library("tidyverse")
 library("ggplot2")
 library("gganimate")
@@ -46,8 +47,28 @@ smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function
   geom_bar(fill='lightpink') +  labs(x='Smoking Status')
 smoking
 
-#correlation
+
+### Correlations
+#correlation: age & hypertension
 cor(stroke$age, stroke$hypertension, use = "complete.obs")
+
+#correlation: age & heart disease
+cor(stroke$age, stroke$heart_disease, use = "complete.obs")
+
+#correlation: age & glucose level
+cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
+
+test1 <- chisq.test(table(stroke$age, stroke$bmi))
+test1
+summary(table(stroke$age, stroke$bmi))
+
+
+
+
+#plot: age & glucose level
+
+
+
 
 
 
