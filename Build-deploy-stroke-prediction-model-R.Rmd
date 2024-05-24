@@ -2,7 +2,7 @@
 title: "Build and deploy a stroke prediction model using R"
 date: "`r Sys.Date()`"
 output: html_document
-author: "Put your name!"
+author: "Karolina Dyrla-Mularczyk"
 ---
 
 # About Data Analysis Report
@@ -20,9 +20,14 @@ This data set is used to predict whether a patient is likely to get stroke based
 
 ## Load data and install packages
 
-```{r}
-
+```{r setup, include=FALSE}
+library("knitr")
+library("tidyverse")
+library("plotly")
+library("htmlwidgets")
+source("Stroke_code.R")
 ```
+
 
 
 ## Describe and explore the data
