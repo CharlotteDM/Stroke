@@ -33,10 +33,19 @@ source("Stroke_code.R")
 ## Describe and explore the data
 
 ```{r}
-
+summary(stroke)
+skim(stroke)
 ```
 
+The average age in the study group is  
+43.3. The average glucose level in this study group is 
+106.
 
+This chart shows fertility rate in EU countries in 2020.
+
+```{r EU_FR=plot, dev='png', out.width="150%", echo=FALSE}
+plot()
+```
 
 # Task Two: Build prediction models
 
