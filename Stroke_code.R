@@ -54,22 +54,9 @@ smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function
   geom_bar(fill='lightpink') +  labs(x='Smoking Status')
 smoking
 
-#plot: "Glucose & Average Glucose Level"
-means <- aggregate(avg_glucose_level~gender,stroke, mean)
-
-
-ggplot(stroke, aes(x = gender, y = avg_glucose_level, fill = gender)) +
-  geom_boxplot() +
-  #geom_jitter(alpha = 0.3, color = "green") +
-  stat_summary(fun=mean, colour="darkred", geom="point", 
-               shape=18, size=3, show.legend=FALSE) + 
-  geom_text(data = means, aes(label = avg_glucose_level, y = avg_glucose_level + 0.08)) +
-  labs(x = "Gender", y = "Average Glucose Level") +
-  theme_minimal()
-
 
 # plot: Average Glucose Level in the Group of Patients with Stroke
-stroke %>%
+glucose_and_stroke <- stroke %>%
   filter (stroke == 1) %>%
 ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
   stat_halfeye(
@@ -77,10 +64,20 @@ ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
     justification = -0.2,
     .width = 0,
     point_colour = NA
-  )
+  ) +
+  geom_boxplot(
+    width = 0.11,
+    outlier.color = NA,
+    alpha = 0.4
+  ) + ggdist::stat_dots(
+    side = "left",
+    justification = 1.1,
+    binwidth = 0.25
+  ) 
+glucose_and_stroke
 
 # plot: Average Glucose Level in the Group of Patients with no Stroke
-stroke %>%
+glucose_no_stroke <- stroke %>%
   filter (stroke == 0) %>%
   ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
   stat_halfeye(
@@ -88,7 +85,19 @@ stroke %>%
     justification = -0.2,
     .width = 0,
     point_colour = NA
-  )
+  ) +
+  geom_boxplot(
+    width = 0.11,
+    outlier.color = NA,
+    alpha = 0.4
+  ) + ggdist::stat_dots(
+    side = "left",
+    justification = 1.1,
+    binwidth = 0.25
+  ) 
+glucose_no_stroke
+
+
 
 plot(stroke$avg_glucose_level, stroke$bmi, 
      xlab = "Poziom glukozy", ylab = "BMI",
@@ -112,12 +121,15 @@ cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 
 
 
-test1 <- chisq.test(table(stroke$age, stroke$bmi))
-test1
-summary(table(stroke$age, stroke$bmi))
+####Creating new data frame for chi square analysis
+new_dt <- stroke %>%
+  select(gender, hypertension, stroke, smoking_status)
 
-
-
+new_dt$gender <- case_when(
+  new_dt$gender == "Female" ~ 1,
+  new_dt$gender == "Male" ~ 2,
+  new_dt$gender == "Other" ~ 3
+)
 
 #plot: age & glucose level
 
