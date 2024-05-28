@@ -151,14 +151,14 @@ print(hyperten_stroke)
 #chi square analysis
 print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
-print(chisq.test(hyperten_stroke))
+print(chisq.test(hyperten_stroke)) 
+# --- there are no evidences to reject the null hypothesis
 
 #mcnemar test
 mcnemar.test(hyperten_stroke)
+# --- there is no evidence to reject the null hypothesis
 
 
-# Add legend separately
-legend("center", legend = rownames(stu_data), fill = c("lightblue", "lightgreen"))
 
 #stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
 #print(stroke_smok_stat)
