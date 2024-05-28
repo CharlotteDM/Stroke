@@ -135,15 +135,17 @@ new_dt$smoking_status <- case_when(
   new_dt$smoking_status == "never smoked" ~ 2,
   new_dt$smoking_status == "smokes" ~ 3,
   new_dt$smoking_status == "Unknown" ~ 4)
+#remove Other gender for chi square table
+new_dt <- subset(new_dt, gender != "3")
 
 #tables for chi square
-stroke_gender = table(stroke$gender,stroke$stroke) 
+stroke_gender = table(new_dt$gender,new_dt$stroke) 
 print(stroke_gender)
 
-hyperten_gender = table(stroke$gender,stroke$hypertension) 
+hyperten_gender = table(new_dt$gender,new_dt$hypertension) 
 print(hyperten_gender)
 
-hyperten_stroke = table(stroke$hypertension,stroke$stroke) 
+hyperten_stroke = table(new_dt$hypertension,new_dt$stroke) 
 print(hyperten_stroke)
 
 #chi square analysis
@@ -151,6 +153,8 @@ print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
 print(chisq.test(hyperten_stroke))
 
+#mcnemar test
+mcnemar.test(hyperten_stroke)
 
 
 # Add legend separately
