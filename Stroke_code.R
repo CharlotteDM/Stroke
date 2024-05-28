@@ -120,7 +120,6 @@ cor(stroke$age, stroke$heart_disease, use = "complete.obs")
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 
 
-
 ####Creating new data frame for chi square analysis
 new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
@@ -147,7 +146,15 @@ print(hyperten_gender)
 hyperten_stroke = table(stroke$hypertension,stroke$stroke) 
 print(hyperten_stroke)
 
+#chi square analysis
+print(chisq.test(stroke_gender))
+print(chisq.test(hyperten_gender))
+print(chisq.test(hyperten_stroke))
 
+
+
+# Add legend separately
+legend("center", legend = rownames(stu_data), fill = c("lightblue", "lightgreen"))
 
 #stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
 #print(stroke_smok_stat)
