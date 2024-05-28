@@ -54,6 +54,18 @@ smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function
   geom_bar(fill='lightpink') +  labs(x='Smoking Status')
 smoking
 
+#tables: Smoking Status & Stroke; Smoking Status & Hypertension
+stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
+colnames(stroke_smok_stat)[1] <- "No Stroke"
+colnames(stroke_smok_stat)[2] <- "Stroke"
+print(stroke_smok_stat)
+
+
+hyperten_smok_stat = table(stroke$smoking_status,stroke$hypertension) 
+colnames(hyperten_smok_stat)[1] <- "No Hypertension"
+colnames(hyperten_smok_stat)[2] <- "Hypertension"
+print(hyperten_smok_stat)
+
 
 # plot: Average Glucose Level in the Group of Patients with Stroke
 glucose_and_stroke <- stroke %>%
@@ -159,12 +171,6 @@ mcnemar.test(hyperten_stroke)
 # --- there is no evidence to reject the null hypothesis
 
 
-
-#stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
-#print(stroke_smok_stat)
-
-#hyperten_smok_stat = table(stroke$smoking_status,stroke$hypertension) 
-#print(hyperten_smok_stat)
 
 
 #plot: age & glucose level
