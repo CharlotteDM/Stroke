@@ -4,8 +4,10 @@ library(dplyr)
 library(skimr)
 library(DataExplorer)
 library(corrplot)
+library(caret)
 library(tidyverse)
 library(tidyquant)
+library(tidymodels)
 library(ggplot2)
 library(gganimate)
 library(ggrepel)
@@ -135,11 +137,18 @@ cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 ####Creating new data frame for chi square analysis
 new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
-#gender as numeric
+
+#gender as numeric for two data frames
 new_dt$gender <- case_when(
   new_dt$gender == "Female" ~ 1,
   new_dt$gender == "Male" ~ 2,
   new_dt$gender == "Other" ~ 3)
+
+stroke$gender <- case_when(
+stroke$gender == "Female" ~ 1,
+stroke$gender == "Male" ~ 2,
+stroke$gender == "Other" ~ 3)
+
 #smoking status as numeric
 unique(new_dt$smoking_status)
 new_dt$smoking_status <- case_when(
@@ -171,14 +180,12 @@ mcnemar.test(hyperten_stroke)
 # --- there is no evidence to reject the null hypothesis
 
 
+### Prediction Model 
 
+#Regression 
 
-#plot: age & glucose level
-
-
-
-
-
-
+stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
+                         data = stroke, family = binomial)
+summary(stroke_regression)
 
 
