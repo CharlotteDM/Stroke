@@ -124,12 +124,37 @@ cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 ####Creating new data frame for chi square analysis
 new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
-
+#gender as numeric
 new_dt$gender <- case_when(
   new_dt$gender == "Female" ~ 1,
   new_dt$gender == "Male" ~ 2,
-  new_dt$gender == "Other" ~ 3
-)
+  new_dt$gender == "Other" ~ 3)
+#smoking status as numeric
+unique(new_dt$smoking_status)
+new_dt$smoking_status <- case_when(
+  new_dt$smoking_status == "formerly smoked" ~ 1,
+  new_dt$smoking_status == "never smoked" ~ 2,
+  new_dt$smoking_status == "smokes" ~ 3,
+  new_dt$smoking_status == "Unknown" ~ 4)
+
+#tables for chi square
+stroke_gender = table(stroke$gender,stroke$stroke) 
+print(stroke_gender)
+
+hyperten_gender = table(stroke$gender,stroke$hypertension) 
+print(hyperten_gender)
+
+hyperten_stroke = table(stroke$hypertension,stroke$stroke) 
+print(hyperten_stroke)
+
+
+
+#stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
+#print(stroke_smok_stat)
+
+#hyperten_smok_stat = table(stroke$smoking_status,stroke$hypertension) 
+#print(hyperten_smok_stat)
+
 
 #plot: age & glucose level
 
