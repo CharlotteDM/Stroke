@@ -19,6 +19,7 @@ library(plotly)
 library(htmlwidgets)
 library(GGally)
 library(stats)
+library(coefplot)
 library(rstudioapi)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -182,10 +183,13 @@ mcnemar.test(hyperten_stroke)
 
 ### Prediction Model 
 
-#Regression 
+#Generalized Linear Regression 
 
 stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
                          data = stroke, family = binomial)
 summary(stroke_regression)
+
+#Coefficient Plot
+coefplot(stroke_regression)
 
 
