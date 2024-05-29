@@ -20,6 +20,8 @@ library(htmlwidgets)
 library(GGally)
 library(stats)
 library(coefplot)
+library(rpart)
+library(rpart.plot)
 library(rstudioapi)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -193,3 +195,13 @@ summary(stroke_regression)
 coefplot(stroke_regression)
 
 
+
+#Decision Tree
+stroke_tree <- rpart(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
+                     data = stroke)
+print(stroke_tree)
+rpart.plot(stroke_tree, extra = "auto")
+
+
+
+#Boosted Tree
