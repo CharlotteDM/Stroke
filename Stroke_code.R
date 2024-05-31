@@ -82,7 +82,7 @@ names(stroke) #column names
 summary(stroke) #summary for each columns
 skim(stroke) #missing values, quantile, etc. for numeric var
 create_report(stroke) #full data profile with visualizations
-
+table(stroke$stroke) #count stroke patients
 
 ### Plots-Visualizations of Data from Database"Stroke"
 
@@ -90,7 +90,7 @@ create_report(stroke) #full data profile with visualizations
 gender <- ggplot(stroke, aes(x=reorder(gender, gender, function(x)-length(x)))) +
   geom_bar(fill='lightblue') +  labs(x='Gender')
 gender
-
+table(stroke$gender)
 
 #plot: type of residence
 residence <- ggplot(stroke, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
@@ -226,14 +226,7 @@ coefplot(stroke_regression)
 
 ###Decision Tree
 
-#formula without splitted data
-stroke_tree <- rpart(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
-                     data = stroke)
-print(stroke_tree)
-rpart.plot(stroke_tree, extra = "auto")
-
-
-#formula WITH splitted data
+#splitting data
 sample_data = sample.split(stroke, SplitRatio = 0.8)
 train_data <- subset(stroke, sample_data == TRUE)
 test_data <- subset(stroke, sample_data == FALSE)
@@ -241,8 +234,12 @@ test_data <- subset(stroke, sample_data == FALSE)
 model<- ctree(stroke ~ ., train_data)
 plot(model)
 
+#prediction for decision tree
+predict_model<-predict(model, test_data) 
+pred_table <- table(test_data$stroke, predict_model) 
+pred_table
 
-  
+
   
   
   
@@ -254,4 +251,4 @@ plot(model)
   
   
   #bibliografia
-  #https://www.datacamp.com/tutorial/decision-trees-R
+  #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
