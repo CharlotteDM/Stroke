@@ -27,7 +27,6 @@ library(xgboost)
 library(rstudioapi)
 library(datasets) 
 library(caTools)
-install.packages("party")
 library(party)
 library(magrittr)
 
@@ -36,6 +35,33 @@ setwd(path)
 
 stroke <- read.csv("data/healthcare-dataset-stroke-data.csv", 
                    stringsAsFactors = F)
+
+#Gender as numeric
+stroke$gender <- case_when(
+  stroke$gender == "Female" ~ 1,
+  stroke$gender == "Male" ~ 2,
+  stroke$gender == "Other" ~ 3)
+
+#Smoking Status as numeric
+stroke$smoking_status <- case_when(
+  stroke$smoking_status == "formerly smoked" ~ 1,
+  stroke$smoking_status == "never smoked" ~ 2,
+  stroke$smoking_status == "smokes" ~ 3,
+  stroke$smoking_status == "Unknown" ~ 4)
+
+#BMI classification as numeric (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
+stroke$bmi = case_when(
+    stroke$bmi < 16.5 ~ "severly underweight",
+    stroke$bmi < 18.5 ~ "underweight",
+    stroke$bmi >= 18.5 & stroke$bmi <= 24.9  ~ "normal weight",
+    stroke$bmi >= 25 & stroke$bmi <= 29.9 ~ "overweight",
+    stroke$bmi >= 30 & stroke$bmi <= 34.9 ~ "obesity class 1",
+    stroke$bmi >= 35 & stroke$bmi <= 39.9 ~ "obesity class 2",
+    stroke$bmi >= 40 ~ "obesity class 3")
+
+stroke[which(stroke$bmi<16.5), 'BMIclass'] <- "Severly Underweight"
+stroke[which(stroke$bmi<18), 'BMIclass'] <- "Underweight"
+stroke[which(stroke$bmi>=18.5 & stroke$bmi<24.9), 'BMIclass'] <- "Normal"
 
 #exploring data set
 dim(stroke) #dimensions
@@ -149,18 +175,12 @@ new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
 
 #gender as numeric 
-new_dt$gender <- case_when(
-  new_dt$gender == "Female" ~ 1,
-  new_dt$gender == "Male" ~ 2,
-  new_dt$gender == "Other" ~ 3)
+#new_dt$gender <- case_when(
+  #new_dt$gender == "Female" ~ 1,
+  #new_dt$gender == "Male" ~ 2,
+  #new_dt$gender == "Other" ~ 3)
 
-#smoking status as numeric
-unique(new_dt$smoking_status)
-new_dt$smoking_status <- case_when(
-  new_dt$smoking_status == "formerly smoked" ~ 1,
-  new_dt$smoking_status == "never smoked" ~ 2,
-  new_dt$smoking_status == "smokes" ~ 3,
-  new_dt$smoking_status == "Unknown" ~ 4)
+
 #remove Other gender for chi square table
 new_dt <- subset(new_dt, gender != "3")
 
@@ -189,11 +209,7 @@ mcnemar.test(hyperten_stroke)
 
 ###Generalized Linear Regression 
 
-#preparing data for regression model
-stroke$gender <- case_when(
-stroke$gender == "Female" ~ 1,
-stroke$gender == "Male" ~ 2,
-stroke$gender == "Other" ~ 3)
+
 
 #character as factors
 print(stroke)
