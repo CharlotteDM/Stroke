@@ -22,7 +22,14 @@ library(stats)
 library(coefplot)
 library(rpart)
 library(rpart.plot)
+library(useful)
+library(xgboost)
 library(rstudioapi)
+library(datasets) 
+library(caTools)
+install.packages("party")
+library(party)
+library(magrittr)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -141,16 +148,11 @@ cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
 
-#gender as numeric for two data frames
+#gender as numeric 
 new_dt$gender <- case_when(
   new_dt$gender == "Female" ~ 1,
   new_dt$gender == "Male" ~ 2,
   new_dt$gender == "Other" ~ 3)
-
-stroke$gender <- case_when(
-stroke$gender == "Female" ~ 1,
-stroke$gender == "Male" ~ 2,
-stroke$gender == "Other" ~ 3)
 
 #smoking status as numeric
 unique(new_dt$smoking_status)
@@ -185,8 +187,26 @@ mcnemar.test(hyperten_stroke)
 
 ### Prediction Model 
 
-#Generalized Linear Regression 
+###Generalized Linear Regression 
 
+#preparing data for regression model
+stroke$gender <- case_when(
+stroke$gender == "Female" ~ 1,
+stroke$gender == "Male" ~ 2,
+stroke$gender == "Other" ~ 3)
+
+#character as factors
+print(stroke)
+stroke$ever_married<- factor(stroke$ever_married)
+stroke$work_type<- factor(stroke$work_type)
+stroke$Residence_type<- factor(stroke$Residence_type)
+stroke$bmi<- factor(stroke$bmi)
+stroke$smoking_status<- factor(stroke$smoking_status)
+
+
+
+
+#simple dormula
 stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
                          data = stroke, family = binomial)
 summary(stroke_regression)
@@ -196,12 +216,34 @@ coefplot(stroke_regression)
 
 
 
-#Decision Tree
+###Decision Tree
+
+#formula without splitted data
 stroke_tree <- rpart(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
                      data = stroke)
 print(stroke_tree)
 rpart.plot(stroke_tree, extra = "auto")
 
 
+#formula WITH splitted data
+sample_data = sample.split(stroke, SplitRatio = 0.8)
+train_data <- subset(stroke, sample_data == TRUE)
+test_data <- subset(stroke, sample_data == FALSE)
 
-#Boosted Tree
+model<- ctree(stroke ~ ., train_data)
+plot(model)
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #bibliografia
+  #https://www.datacamp.com/tutorial/decision-trees-R
