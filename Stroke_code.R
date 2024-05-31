@@ -59,9 +59,15 @@ stroke$bmi = case_when(
     stroke$bmi >= 35 & stroke$bmi <= 39.9 ~ "obesity class 2",
     stroke$bmi >= 40 ~ "obesity class 3")
 
-stroke[which(stroke$bmi<16.5), 'BMIclass'] <- "Severly Underweight"
-stroke[which(stroke$bmi<18), 'BMIclass'] <- "Underweight"
-stroke[which(stroke$bmi>=18.5 & stroke$bmi<24.9), 'BMIclass'] <- "Normal"
+stroke$bmi <- case_when(
+  stroke$bmi == "severly underweight" ~ 1,
+  stroke$bmi == "underweight" ~ 2,
+  stroke$bmi == "normal weight" ~ 3,
+  stroke$bmi == "overweight" ~ 4,
+  stroke$bmi == "obesity class 1" ~ 5,
+  stroke$bmi == "obesity class 2" ~ 6,
+  stroke$bmi == "obesity class 3" ~ 3,)
+
 
 #exploring data set
 dim(stroke) #dimensions
