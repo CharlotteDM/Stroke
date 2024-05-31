@@ -68,6 +68,11 @@ stroke$bmi <- case_when(
   stroke$bmi == "obesity class 2" ~ 6,
   stroke$bmi == "obesity class 3" ~ 3,)
 
+#characters as factors
+stroke$ever_married<- factor(stroke$ever_married)
+stroke$work_type<- factor(stroke$work_type)
+stroke$Residence_type<- factor(stroke$Residence_type)
+
 
 #exploring data set
 dim(stroke) #dimensions
@@ -155,14 +160,13 @@ glucose_no_stroke
 
 
 
-plot(stroke$avg_glucose_level, stroke$bmi, 
-     xlab = "Poziom glukozy", ylab = "BMI",
-     main = "Wykres zależności pomiędzy poziomem glukozy a BMI",
-     col = "blue", pch = 16) +
-  theme_minimal()
+#plot(stroke$avg_glucose_level, stroke$bmi, 
+     #xlab = "Poziom glukozy", ylab = "BMI",
+     #main = "Wykres zależności pomiędzy poziomem glukozy a BMI",
+     #col = "blue", pch = 16) + theme_minimal()
 
-ggplot(data = stroke, mapping = aes(x = avg_glucose_level, y = age)) +
-  geom_point(alpha = 0.5, aes(color = gender))
+#ggplot(data = stroke, mapping = aes(x = avg_glucose_level, y = age)) +
+  #geom_point(alpha = 0.5, aes(color = gender))
 
 
 ### Correlations
@@ -179,12 +183,6 @@ cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 ####Creating new data frame for chi square analysis
 new_dt <- stroke %>%
   select(gender, hypertension, stroke, smoking_status)
-
-#gender as numeric 
-#new_dt$gender <- case_when(
-  #new_dt$gender == "Female" ~ 1,
-  #new_dt$gender == "Male" ~ 2,
-  #new_dt$gender == "Other" ~ 3)
 
 
 #remove Other gender for chi square table
@@ -216,20 +214,8 @@ mcnemar.test(hyperten_stroke)
 ###Generalized Linear Regression 
 
 
-
-#character as factors
-print(stroke)
-stroke$ever_married<- factor(stroke$ever_married)
-stroke$work_type<- factor(stroke$work_type)
-stroke$Residence_type<- factor(stroke$Residence_type)
-stroke$bmi<- factor(stroke$bmi)
-stroke$smoking_status<- factor(stroke$smoking_status)
-
-
-
-
-#simple dormula
-stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
+#simple formula
+stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
                          data = stroke, family = binomial)
 summary(stroke_regression)
 
@@ -241,7 +227,7 @@ coefplot(stroke_regression)
 ###Decision Tree
 
 #formula without splitted data
-stroke_tree <- rpart(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, 
+stroke_tree <- rpart(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
                      data = stroke)
 print(stroke_tree)
 rpart.plot(stroke_tree, extra = "auto")
