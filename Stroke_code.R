@@ -29,6 +29,7 @@ library(datasets)
 library(caTools)
 library(party)
 library(magrittr)
+library(Boruta)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -239,8 +240,15 @@ predict_model<-predict(model, test_data)
 pred_table <- table(test_data$stroke, predict_model) 
 pred_table
 
+boruta_output <- Boruta(stroke ~ ., data = train_data, doTrace = 0)
+rough_fix_mod <- TentativeRoughFix(boruta_output)
+boruta_signif <- getSelectedAttributes(rough_fix_mod)
+importances <- attStats(rough_fix_mod)
+importances <- importances[importances$decision != "Rejected", c("meanImp", "decision")]
+importances[order(-importances$meanImp), ]
 
-  
+boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
+boruta_plot
   
   
   
