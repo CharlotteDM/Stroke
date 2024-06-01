@@ -223,7 +223,10 @@ summary(stroke_regression)
 #Coefficient Plot
 coefplot(stroke_regression)
 
-
+#step model with lower AIC
+Null <- lm(stroke~1, data = stroke)
+stats::step(Null, k = 2, direction = "both", 
+     scope = stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi)
 
 ###Decision Tree
 
@@ -232,6 +235,9 @@ sample_data = sample.split(stroke, SplitRatio = 0.8)
 train_data <- subset(stroke, sample_data == TRUE)
 test_data <- subset(stroke, sample_data == FALSE)
 
+prop.table(table(train_data$stroke))
+
+#decision tree with ctree function
 model<- ctree(stroke ~ ., train_data)
 plot(model)
 
@@ -240,6 +246,13 @@ predict_model<-predict(model, test_data)
 pred_table <- table(test_data$stroke, predict_model) 
 pred_table
 
+ac_Test < - sum(diag(predict_model)) / sum(predict_model)
+print(paste('Accuracy for test is found to be', ac_Test))
+
+
+
+
+#Feature Ranking and Selection Algorithm
 boruta_output <- Boruta(stroke ~ ., data = train_data, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
 boruta_signif <- getSelectedAttributes(rough_fix_mod)
@@ -251,8 +264,7 @@ boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "F
 boruta_plot
   
   
-  
-  
+
   
   
   
@@ -260,3 +272,4 @@ boruta_plot
   
   #bibliografia
   #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
+#https://www.appsilon.com/post/r-decision-treees
