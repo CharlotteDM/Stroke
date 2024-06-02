@@ -264,14 +264,13 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 
 
 ###Boosting - Random Forest with Package Caret
-
-#DF stroke for boosting without factors
-stroke_df_boost <- stroke[, -(6:8)]
+#stroke (dependent outcome) as factor
+stroke$stroke <- as.numeric(stroke$stroke)
 
 set.seed(1)
 model1 <- train(
   stroke ~ .,
-  data = stroke_df_boost,
+  data = stroke,
   method = 'gbm',
   verbose = FALSE
 )
@@ -283,18 +282,19 @@ plot(model1)
 set.seed(1) 
 model2 <- train(
   stroke ~ .,
-  data = stroke_df_boost,
+  data = stroke,
   method = 'gbm',
   preProcess = c("center", "scale"),
   verbose = FALSE
 )
 model2
+plot(model2)
 
 #splitting data
 set.seed(1)
-inTraining <- createDataPartition(stroke_df_boost$stroke, p = .80, list = FALSE)
-training <- stroke_df_boost[inTraining,]
-testing  <- stroke_df_boost[-inTraining,]
+inTraining <- createDataPartition(stroke$stroke, p = .80, list = FALSE)
+training <- stroke[inTraining,]
+testing  <- stroke[-inTraining,]
 
 
 #model with training data
@@ -307,6 +307,7 @@ model3 <- train(
   verbose = FALSE
 )
 model3
+plot(model3)
 
 #prediction for test data set
 test.features = subset(testing, select=-c(stroke))
@@ -352,7 +353,7 @@ tuneGrid <- expand.grid(
 
 model5 <- train(
   stroke ~ .,
-  data = stroke_df_boost,
+  data = stroke,
   method = 'gbm',
   preProcess = c("center", "scale"),
   trControl = ctrl,
@@ -362,7 +363,7 @@ model5 <- train(
 model5
 plot(model5)
 
-grid.arrange(model1, model2, model3, model4, model5, ncol=5,top="Models" )
+
 
 
   #References:
