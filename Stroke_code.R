@@ -30,6 +30,7 @@ library(caTools)
 library(party)
 library(magrittr)
 library(Boruta)
+library(gridExtra)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -224,9 +225,11 @@ summary(stroke_regression)
 coefplot(stroke_regression)
 
 #step model with lower AIC
-Null <- lm(stroke~1, data = stroke)
+Null <- glm(stroke~1, data = stroke)
 stats::step(Null, k = 2, direction = "both", 
      scope = stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi)
+#the last model is the lowest
+
 
 ###Decision Tree
 
@@ -238,22 +241,17 @@ test_data <- subset(stroke, sample_data == FALSE)
 prop.table(table(train_data$stroke))
 
 #decision tree with ctree function
-model<- ctree(stroke ~ ., train_data)
-plot(model)
+model_tree<- ctree(stroke ~ ., train_data)
+plot(model_tree)
 
 #prediction for decision tree
-predict_model<-predict(model, test_data) 
+predict_model<-predict(model_tree, test_data) 
 pred_table <- table(test_data$stroke, predict_model) 
 pred_table
 
-ac_Test < - sum(diag(predict_model)) / sum(predict_model)
-print(paste('Accuracy for test is found to be', ac_Test))
-
-
-
 
 #Feature Ranking and Selection Algorithm
-boruta_output <- Boruta(stroke ~ ., data = train_data, doTrace = 0)
+boruta_output <- Boruta(stroke ~ ., data = stroke, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
 boruta_signif <- getSelectedAttributes(rough_fix_mod)
 importances <- attStats(rough_fix_mod)
@@ -261,15 +259,113 @@ importances <- importances[importances$decision != "Rejected", c("meanImp", "dec
 importances[order(-importances$meanImp), ]
 
 boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
-boruta_plot
-  
-  
+boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
+ # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
 
-  
-  
-  
-  
-  
-  #bibliografia
-  #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
+
+###Boosting - Random Forest with Package Caret
+
+#DF stroke for boosting without factors
+stroke_df_boost <- stroke[, -(6:8)]
+
+set.seed(1)
+model1 <- train(
+  stroke ~ .,
+  data = stroke_df_boost,
+  method = 'gbm',
+  verbose = FALSE
+)
+model1
+plot(model1)
+
+
+#preprocessing
+set.seed(1) 
+model2 <- train(
+  stroke ~ .,
+  data = stroke_df_boost,
+  method = 'gbm',
+  preProcess = c("center", "scale"),
+  verbose = FALSE
+)
+model2
+
+#splitting data
+set.seed(1)
+inTraining <- createDataPartition(stroke_df_boost$stroke, p = .80, list = FALSE)
+training <- stroke_df_boost[inTraining,]
+testing  <- stroke_df_boost[-inTraining,]
+
+
+#model with training data
+set.seed(1)
+model3 <- train(
+  stroke ~ .,
+  data = training,
+  method = 'gbm',
+  preProcess = c("center", "scale"),
+  verbose = FALSE
+)
+model3
+
+#prediction for test data set
+test.features = subset(testing, select=-c(stroke))
+test.target = subset(testing, select=stroke)[,1]
+predictions = predict(model3, newdata = test.features)
+
+sqrt(mean((test.target - predictions)^2)) #RMSE
+cor(test.target, predictions) ^ 2 #r2
+
+#Cross Validation - resampling and splitting data many times
+ctrl <- trainControl(
+  method = "cv",
+  number = 10
+)
+
+#retrain model
+model4 <- train(
+  stroke ~ .,
+  data = training,
+  method = 'gbm',
+  preProcess = c("center", "scale"),
+  trControl = ctrl,
+  verbose = FALSE
+)
+model4
+plot(model4)
+
+#next prediction for test data set
+test.features = subset(testing, select=-c(stroke))
+test.target = subset(testing, select=stroke)[,1]
+predictions = predict(model4, newdata = test.features)
+sqrt(mean((test.target - predictions)^2)) #RMSE
+cor(test.target, predictions) ^ 2 #R2
+
+#tuning parameters
+set.seed(1)
+tuneGrid <- expand.grid(
+  n.trees = c(50, 100),
+  interaction.depth = c(1, 2),
+  shrinkage = 0.1,
+  n.minobsinnode = 10
+)
+
+model5 <- train(
+  stroke ~ .,
+  data = stroke_df_boost,
+  method = 'gbm',
+  preProcess = c("center", "scale"),
+  trControl = ctrl,
+  tuneGrid = tuneGrid,
+  verbose = FALSE
+)
+model5
+plot(model5)
+
+grid.arrange(model1, model2, model3, model4, model5, ncol=5,top="Models" )
+
+
+  #References:
+#https://www.geeksforgeeks.org/decision-tree-in-r-programming/
+#https://koalatea.io/r-boosted-tree-regression/
 #https://www.appsilon.com/post/r-decision-treees
