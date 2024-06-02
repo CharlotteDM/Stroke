@@ -265,7 +265,7 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 
 ###Boosting - Random Forest with Package Caret
 #stroke (dependent outcome) as factor
-stroke$stroke <- as.numeric(stroke$stroke)
+stroke$stroke <- as.factor(stroke$stroke)
 
 set.seed(1)
 model1 <- train(
@@ -314,14 +314,9 @@ test.features = subset(testing, select=-c(stroke))
 test.target = subset(testing, select=stroke)[,1]
 predictions = predict(model3, newdata = test.features)
 
-sqrt(mean((test.target - predictions)^2)) #RMSE
-cor(test.target, predictions) ^ 2 #r2
 
 #Cross Validation - resampling and splitting data many times
-ctrl <- trainControl(
-  method = "cv",
-  number = 10
-)
+ctrl <- trainControl(method = "cv",number = 10)
 
 #retrain model
 model4 <- train(
@@ -339,8 +334,7 @@ plot(model4)
 test.features = subset(testing, select=-c(stroke))
 test.target = subset(testing, select=stroke)[,1]
 predictions = predict(model4, newdata = test.features)
-sqrt(mean((test.target - predictions)^2)) #RMSE
-cor(test.target, predictions) ^ 2 #R2
+
 
 #tuning parameters
 set.seed(1)
@@ -348,8 +342,7 @@ tuneGrid <- expand.grid(
   n.trees = c(50, 100),
   interaction.depth = c(1, 2),
   shrinkage = 0.1,
-  n.minobsinnode = 10
-)
+  n.minobsinnode = 10)
 
 model5 <- train(
   stroke ~ .,
