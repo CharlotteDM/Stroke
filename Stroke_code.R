@@ -31,6 +31,7 @@ library(party)
 library(magrittr)
 library(Boruta)
 library(gridExtra)
+install.packages("DiagrammerR")
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -74,7 +75,8 @@ stroke$bmi <- case_when(
 stroke$ever_married<- factor(stroke$ever_married)
 stroke$work_type<- factor(stroke$work_type)
 stroke$Residence_type<- factor(stroke$Residence_type)
-
+#numeric bmi as factor
+#stroke$bmi <- factor(stroke$bmi)
 
 #exploring data set
 dim(stroke) #dimensions
@@ -104,6 +106,22 @@ residence
 smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function(x)-length(x)))) +
   geom_bar(fill='lightpink') +  labs(x='Smoking Status')
 smoking
+
+#plot:BMI
+bmi_df <-stroke %>% select(bmi)
+bmi_df$bmi <- as.factor(bmi_df$bmi)
+counts <- table(bmi_df$bmi)
+print(counts)
+bmi_df <- as.data.frame(counts)
+
+#Define custom colors for each bmi
+#bin_colors <- c("red", "green", "blue", "yellow", "purple")
+#Create a histogram
+bmi <- ggplot(bmi_df, aes(x = Var1, y = Freq)) +
+  geom_col() +
+  theme(legend.position = "bottom")
+ bmi
+
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
 stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
@@ -263,9 +281,9 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
  # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
 
 
-###Boosting - Random Forest with Package Caret
-#stroke (dependent outcome) as factor
-stroke$stroke <- as.factor(stroke$stroke)
+###Random Forest (with Package Caret)
+
+stroke$stroke <- as.factor(stroke$stroke) #dependent variable as factor -> classification
 
 set.seed(1)
 model1 <- train(
@@ -354,9 +372,14 @@ model5 <- train(
   verbose = FALSE
 )
 model5
+model5$results %>% arrange(Accuracy)
 plot(model5)
 
-
+xgb.plot.tree(model5)
+xgboost::xgb.importance(model5)
+xgb.plot.multi.trees(model5$finalModel, feature_names = model5$coefnames)
+ 
+class(model5)
 
 
   #References:
