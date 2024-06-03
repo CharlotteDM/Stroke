@@ -76,6 +76,7 @@ stroke$bmi <- case_when(
 stroke$ever_married<- factor(stroke$ever_married)
 stroke$work_type<- factor(stroke$work_type)
 stroke$Residence_type<- factor(stroke$Residence_type)
+stroke$stroke <- factor(stroke$stroke)
 
 
 #exploring data set
@@ -287,38 +288,26 @@ pred_table
 
 #accuracy
 accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
-#Accuracy of the Decision Tree Model is 0.59.
+#Accuracy of the Decision Tree Model is 0.95.
 
 
 #Another Way - Xboost
 #Creating Xgboost Model
-model_gbm = gbm(stroke ~.,
-                data = train_data,
-                distribution = "multinomial",
-                cv.folds = 10,
-                shrinkage = .01,
-                n.minobsinnode = 10,
-                n.trees = 500)       
-summary(model_gbm)
+#model_gbm = gbm(stroke ~.,data = train_data, distribution = "multinomial", cv.folds = 10,shrinkage = .01,n.minobsinnode = 10, n.trees = 500)       
+#summary(model_gbm)
 
 #Prediction (Test Data)
-pred_test <- predict.gbm(object = model_gbm,
-                        newdata = test_data,
-                        n.trees = 500,           # 500 tress to be built
-                        type = "response")
-pred_test
-
-
+#pred_test <- predict.gbm(object = model_gbm,newdata = test_data, n.trees = 500, type = "response")
+#pred_test
 
 #Giving Names 
-class_names <- colnames(pred_test)[apply(pred_test, 1, which.max)]
-result <- data.frame(test_data$stroke, class_names)
-print(result)
+#class_names <- colnames(pred_test)[apply(pred_test, 1, which.max)]
+#result <- data.frame(test_data$stroke, class_names)
+#print(result)
 
 #Confusing Matrix
-conf_mat <- confusionMatrix(as.factor(test$stroke), as.factor(class_names))
- 
-print(conf_mat)
+#conf_mat <- confusionMatrix(as.factor(test$stroke), as.factor(class_names))
+ #print(conf_mat)
 
 
 
@@ -328,7 +317,16 @@ print(conf_mat)
 
 ###---Random Forest (with Package Caret)
 
-stroke$stroke <- as.factor(stroke$stroke) #dependent variable as factor -> classification
+#new data frame with variable stroke as numeric for gbm function
+new_df <- stroke 
+new_df$stroke <-as.numeric(new_df$stroke) -1
+
+#Boosting with gbm function
+model_gbm <- gbm::gbm(formula=stroke~., data = new_df)
+model_gbm
+head(predict(model_gbm, type = "response"))
+
+tibble::as_tibble(summary(model_gbm))
 
 set.seed(1)
 model1 <- train(
