@@ -1,4 +1,4 @@
-####Project "Stroke Prediction"
+####---------------Project "Stroke Prediction"
 
 library(dplyr)
 library(skimr)
@@ -24,6 +24,7 @@ library(rpart)
 library(rpart.plot)
 library(useful)
 library(xgboost)
+library(gmodels)
 library(rstudioapi)
 library(datasets) 
 library(caTools)
@@ -228,9 +229,9 @@ mcnemar.test(hyperten_stroke)
 # --- there is no evidence to reject the null hypothesis
 
 
-### Prediction Model 
+### ---------------------Prediction Model 
 
-###Generalized Linear Regression 
+###----Generalized Linear Regression 
 
 
 #simple formula
@@ -245,26 +246,8 @@ coefplot(stroke_regression)
 Null <- glm(stroke~1, data = stroke)
 stats::step(Null, k = 2, direction = "both", 
      scope = stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi)
-#the last model is the lowest
+#the last model has the lowest AIC
 
-
-###Decision Tree
-
-#splitting data
-sample_data = sample.split(stroke, SplitRatio = 0.8)
-train_data <- subset(stroke, sample_data == TRUE)
-test_data <- subset(stroke, sample_data == FALSE)
-
-prop.table(table(train_data$stroke))
-
-#decision tree with ctree function
-model_tree<- ctree(stroke ~ ., train_data)
-plot(model_tree)
-
-#prediction for decision tree
-predict_model<-predict(model_tree, test_data) 
-pred_table <- table(test_data$stroke, predict_model) 
-pred_table
 
 
 #Feature Ranking and Selection Algorithm
@@ -277,10 +260,73 @@ importances[order(-importances$meanImp), ]
 
 boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
 boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
- # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
+# https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
 
 
-###Random Forest (with Package Caret)
+
+
+
+###---Decision Tree (The Simplest Method for Me)
+
+#splitting data
+sample_data = sample.split(stroke, SplitRatio = 0.8)
+train_data <- subset(stroke, sample_data == TRUE)
+test_data <- subset(stroke, sample_data == FALSE)
+
+prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - 
+#reflects the actual distribution of the result in the entire study group
+
+#decision tree with ctree function
+model_tree<- ctree(stroke ~ ., train_data)
+plot(model_tree)
+
+#prediction for decision tree
+predict_model <- predict(model_tree, test_data) 
+pred_table <- table(test_data$stroke, predict_model) 
+pred_table
+
+#accuracy
+accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
+#Accuracy of the Decision Tree Model is 0.59.
+
+
+#Another Way - Xboost
+#Creating Xgboost Model
+model_gbm = gbm(stroke ~.,
+                data = train_data,
+                distribution = "multinomial",
+                cv.folds = 10,
+                shrinkage = .01,
+                n.minobsinnode = 10,
+                n.trees = 500)       
+summary(model_gbm)
+
+#Prediction (Test Data)
+pred_test <- predict.gbm(object = model_gbm,
+                        newdata = test_data,
+                        n.trees = 500,           # 500 tress to be built
+                        type = "response")
+pred_test
+
+
+
+#Giving Names 
+class_names <- colnames(pred_test)[apply(pred_test, 1, which.max)]
+result <- data.frame(test_data$stroke, class_names)
+print(result)
+
+#Confusing Matrix
+conf_mat <- confusionMatrix(as.factor(test$stroke), as.factor(class_names))
+ 
+print(conf_mat)
+
+
+
+
+
+
+
+###---Random Forest (with Package Caret)
 
 stroke$stroke <- as.factor(stroke$stroke) #dependent variable as factor -> classification
 
@@ -374,35 +420,41 @@ model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
 
-xgb.plot.tree(model5)
-xgboost::xgb.importance(model5)
-xgb.plot.multi.trees(model5$finalModel, feature_names = model5$coefnames)
- 
-class(model5)
+
+
+
+#visualization of Random Forest
+#xgb.plot.tree(model5)
+#xgboost::xgb.importance(model5)
+#xgb.plot.multi.trees(model5$finalModel, feature_names = model5$coefnames)
 
 
 
 
-###Other Way to Using Caret
+
+
+
+###---Other Way to Using Caret
 #prepare training scheme
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
-# train the LVQ model
+#train the LVQ model
 set.seed(1)
 modelLvq <- train(stroke~., data=stroke, method="lvq", trControl=control)
-# train the GBM model
+#train the GBM model
 set.seed(1)
 modelGbm <- train(stroke~., data=stroke, method="gbm", trControl=control, verbose=FALSE)
-# train the SVM model
+#train the SVM model
 set.seed(1)
 modelSvm <- train(stroke~., data=stroke, method="svmRadial", trControl=control)
 # collect resamples
 results <- resamples(list(LVQ=modelLvq, GBM=modelGbm, SVM=modelSvm))
-# summarize the distributions
+#summary
 summary(results)
-# boxplots of results
+#boxplots of results
 bwplot(results)
-# dot plots of results
+#dotplot of results
 dotplot(results)
+
 
 
 
@@ -411,4 +463,5 @@ dotplot(results)
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
 #https://www.appsilon.com/post/r-decision-treees
+#https://www.projectpro.io/recipes/apply-gradient-boosting-for-classification-r
 #https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
