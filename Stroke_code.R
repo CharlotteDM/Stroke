@@ -75,8 +75,7 @@ stroke$bmi <- case_when(
 stroke$ever_married<- factor(stroke$ever_married)
 stroke$work_type<- factor(stroke$work_type)
 stroke$Residence_type<- factor(stroke$Residence_type)
-#numeric bmi as factor
-#stroke$bmi <- factor(stroke$bmi)
+
 
 #exploring data set
 dim(stroke) #dimensions
@@ -382,7 +381,34 @@ xgb.plot.multi.trees(model5$finalModel, feature_names = model5$coefnames)
 class(model5)
 
 
+
+
+###Other Way to Using Caret
+#prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the LVQ model
+set.seed(1)
+modelLvq <- train(stroke~., data=stroke, method="lvq", trControl=control)
+# train the GBM model
+set.seed(1)
+modelGbm <- train(stroke~., data=stroke, method="gbm", trControl=control, verbose=FALSE)
+# train the SVM model
+set.seed(1)
+modelSvm <- train(stroke~., data=stroke, method="svmRadial", trControl=control)
+# collect resamples
+results <- resamples(list(LVQ=modelLvq, GBM=modelGbm, SVM=modelSvm))
+# summarize the distributions
+summary(results)
+# boxplots of results
+bwplot(results)
+# dot plots of results
+dotplot(results)
+
+
+
+
   #References:
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
 #https://www.appsilon.com/post/r-decision-treees
+#https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
