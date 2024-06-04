@@ -294,11 +294,12 @@ accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) #Accuracy of th
 
 ###---Random Forest (with Package Caret)
 
-#new data frame with variable stroke as numeric for gbm function
+#new data frame with variable stroke as numeric for gbm function only
 new_df <- stroke 
 new_df$stroke <-as.numeric(new_df$stroke) -1
-#rm character variables
-new_df <-subset(new_df, select = -c(ever_married, work_type, Residence_type, smoking_status))
+#new data frame with rmd uncsr character variables
+new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
+
 #Basic Boosting Tree (gbm function)
 model_gbm <- gbm::gbm(formula=stroke~., data = new_df)
 model_gbm
@@ -307,25 +308,13 @@ tibble::as_tibble(summary(model_gbm))
 
 #Random Forest (caret pckg)
 set.seed(1)
-model1 <- train(
-  stroke ~ .,
-  data = stroke,
-  method = 'gbm',
-  verbose = FALSE
-)
+model1 <- train(stroke ~ ., data = stroke, method = 'gbm', verbose = FALSE)
 model1
 plot(model1)
 
-
 #preprocessing
 set.seed(1) 
-model2 <- train(
-  stroke ~ .,
-  data = stroke,
-  method = 'gbm',
-  preProcess = c("center", "scale"),
-  verbose = FALSE
-)
+model2 <- train(stroke ~ ., data = stroke, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model2
 plot(model2)
 
@@ -337,13 +326,7 @@ testing  <- stroke[-inTraining,]
 
 #model with training data
 set.seed(1)
-model3 <- train(
-  stroke ~ .,
-  data = training,
-  method = 'gbm',
-  preProcess = c("center", "scale"),
-  verbose = FALSE
-)
+model3 <- train(stroke ~ ., data = training, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model3
 plot(model3)
 
@@ -356,14 +339,7 @@ predictions = predict(model3, newdata = test.features)
 ctrl <- trainControl(method = "cv",number = 10)
 
 #retrain model
-model4 <- train(
-  stroke ~ .,
-  data = training,
-  method = 'gbm',
-  preProcess = c("center", "scale"),
-  trControl = ctrl,
-  verbose = FALSE
-)
+model4 <- train(stroke ~ ., data = training, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
 model4
 plot(model4)
 
@@ -374,21 +350,9 @@ predictions = predict(model4, newdata = test.features)
 
 #tuning parameters
 set.seed(1)
-tuneGrid <- expand.grid(
-  n.trees = c(50, 100),
-  interaction.depth = c(1, 2),
-  shrinkage = 0.1,
-  n.minobsinnode = 10)
+tuneGrid <- expand.grid(n.trees = c(50, 100),interaction.depth = c(1, 2), shrinkage = 0.1, n.minobsinnode = 10)
 
-model5 <- train(
-  stroke ~ .,
-  data = stroke,
-  method = 'gbm',
-  preProcess = c("center", "scale"),
-  trControl = ctrl,
-  tuneGrid = tuneGrid,
-  verbose = FALSE
-)
+model5 <- train(stroke ~ .,data = stroke, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, tuneGrid = tuneGrid, verbose = FALSE)
 model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
@@ -474,6 +438,56 @@ results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
 summary(results)
 bwplot(results)
 dotplot(results)
+#glmnet seems the best
+
+
+
+
+
+###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
+control_ml <- trainControl(method="repeatedcv", number=10, repeats=3)
+seed_ml <- 1
+metric <- "Accuracy"
+preProcess=c("center", "scale")
+
+# Linear Discriminant Analysis
+set.seed(seed_ml)
+fit.lda <- train(stroke~., data=new_df_1, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
+# Logistic Regression
+set.seed(seed_ml)
+fit.glm <- train(stroke~., data=new_df_1, method="glm", metric=metric, trControl=control)
+# GLMNET
+set.seed(seed_ml)
+fit.glmnet <- train(stroke~., data=new_df_1, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
+# SVM Radial
+set.seed(seed_ml)
+fit.svmRadial <- train(stroke~., data=new_df_1, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
+# kNN
+set.seed(seed_ml)
+fit.knn <- train(stroke~., data=new_df_1, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
+# CART
+set.seed(seed_ml)
+fit.cart <- train(stroke~., data=new_df_1, method="rpart", metric=metric, trControl=control)
+# C5.0
+set.seed(seed_ml)
+fit.c50 <- train(stroke~., data=new_df_1, method="C5.0", metric=metric, trControl=control)
+# Bagged CART
+set.seed(seed_ml)
+fit.treebag <- train(stroke~., data=new_df_1, method="treebag", metric=metric, trControl=control)
+# Random Forest
+set.seed(seed_ml)
+fit.rf <- train(stroke~., data=new_df_1, method="rf", metric=metric, trControl=control)
+# Stochastic Gradient Boosting (Generalized Boosted Modeling)
+set.seed(seed_ml)
+fit.gbm <- train(stroke~., data=new_df_1, method="gbm", metric=metric, trControl=control, verbose = F)
+
+
+results_2 <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
+                          svm=fit.svmRadial, knn=fit.knn, cart=fit.cart, c50=fit.c50,
+                          bagging=fit.treebag, rf=fit.rf, gbm=fit.gbm))
+summary(results_2)
+bwplot(results_2)
+dotplot(results_2)
 #glmnet seems the best
 
 
