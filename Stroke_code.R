@@ -32,8 +32,10 @@ library(party)
 library(magrittr)
 library(Boruta)
 library(gridExtra)
-library(MASS)
+library(randomForest)
 library(DiagrammerR)
+library(glmnet)
+library(C50)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -333,7 +335,6 @@ inTraining <- createDataPartition(stroke$stroke, p = .80, list = FALSE)
 training <- stroke[inTraining,]
 testing  <- stroke[-inTraining,]
 
-
 #model with training data
 set.seed(1)
 model3 <- train(
@@ -350,7 +351,6 @@ plot(model3)
 test.features = subset(testing, select=-c(stroke))
 test.target = subset(testing, select=stroke)[,1]
 predictions = predict(model3, newdata = test.features)
-
 
 #Cross Validation - resampling and splitting data many times
 ctrl <- trainControl(method = "cv",number = 10)
@@ -371,7 +371,6 @@ plot(model4)
 test.features = subset(testing, select=-c(stroke))
 test.target = subset(testing, select=stroke)[,1]
 predictions = predict(model4, newdata = test.features)
-
 
 #tuning parameters
 set.seed(1)
@@ -395,20 +394,22 @@ model5$results %>% arrange(Accuracy)
 plot(model5)
 
 
-#Random Forest (method from publication: Jared P. Lander "R dla każdego")
+#---XGBOOST (method from publication: Jared P. Lander "R dla każdego")
 stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
 strokeX <- build.x(stroke_formula, data = stroke, contrast = F)          
 strokeY <- build.y(stroke_formula, data = stroke)
 strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
-
 strokeBoost <- xgboost(data = strokeX, label = strokeY, max.depth = 3, eta = 3,
                        nrounds = 20, objective = "binary:logistic")
 xgb.plot.multi.trees(strokeBoost, feature_names = colnames(strokeX))
 xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX)))
-#the most important features - gluocose level and age
+#the most important features - glucose level and age
 
 
-###---Other Way to Using Caret
+
+### ---------------------Evaluation
+
+###---With Using Caret pck 
 #prepare training scheme
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 #train the LVQ model
@@ -429,6 +430,52 @@ bwplot(results)
 #dotplot of results
 dotplot(results)
 
+###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
+control_ml <- trainControl(method="repeatedcv", number=10, repeats=3)
+seed_ml <- 1
+metric <- "Accuracy"
+preProcess=c("center", "scale")
+
+# Linear Discriminant Analysis
+set.seed(seed_ml)
+fit.lda <- train(stroke~., data=stroke, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
+# Logistic Regression
+set.seed(seed_ml)
+fit.glm <- train(stroke~., data=stroke, method="glm", metric=metric, trControl=control)
+# GLMNET
+set.seed(seed_ml)
+fit.glmnet <- train(stroke~., data=stroke, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
+# SVM Radial
+set.seed(seed_ml)
+fit.svmRadial <- train(stroke~., data=stroke, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
+# kNN
+set.seed(seed_ml)
+fit.knn <- train(stroke~., data=stroke, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
+# CART
+set.seed(seed_ml)
+fit.cart <- train(stroke~., data=stroke, method="rpart", metric=metric, trControl=control)
+# C5.0
+set.seed(seed_ml)
+fit.c50 <- train(stroke~., data=stroke, method="C5.0", metric=metric, trControl=control)
+# Bagged CART
+set.seed(seed_ml)
+fit.treebag <- train(stroke~., data=stroke, method="treebag", metric=metric, trControl=control)
+# Random Forest
+set.seed(seed_ml)
+fit.rf <- train(stroke~., data=stroke, method="rf", metric=metric, trControl=control)
+# Stochastic Gradient Boosting (Generalized Boosted Modeling)
+set.seed(seed_ml)
+fit.gbm <- train(stroke~., data=stroke, method="gbm", metric=metric, trControl=control, verbose = F)
+
+
+results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
+                          svm=fit.svmRadial, knn=fit.knn, cart=fit.cart, c50=fit.c50,
+                          bagging=fit.treebag, rf=fit.rf, gbm=fit.gbm))
+summary(results)
+bwplot(results)
+dotplot(results)
+#glmnet seems the best
+
 
 
 
@@ -441,3 +488,5 @@ dotplot(results)
 #https://www.utstat.toronto.edu/~brunner/oldclass/appliedf11/handouts/2101f11StepwiseLogisticR.pdf
 #https://www.projectpro.io/recipes/apply-gradient-boosting-for-classification-r
 #https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
+#https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/
+
