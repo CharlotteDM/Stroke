@@ -43,9 +43,10 @@ setwd(path)
 stroke <- read.csv("data/healthcare-dataset-stroke-data.csv", 
                    stringsAsFactors = F)
 
-#exploring data set
+###---Exploring Data Set
 dim(stroke) #dimensions
 head(stroke) #first 6 rows
+tail(stroke) #last 6 rows
 str(stroke) #structure
 names(stroke) #column names
 summary(stroke) #summary for each columns
@@ -55,35 +56,44 @@ table(stroke$stroke) #count stroke patients - 249 with stroke
 
 
 
-
-#Gender as numeric
-stroke$gender <- case_when(
-  stroke$gender == "Female" ~ 1,
-  stroke$gender == "Male" ~ 2,
-  stroke$gender == "Other" ~ 3)
-
-#Smoking Status as numeric
-stroke$smoking_status <- case_when(
-  stroke$smoking_status == "formerly smoked" ~ 1,
-  stroke$smoking_status == "never smoked" ~ 2,
-  stroke$smoking_status == "smokes" ~ 3,
-  stroke$smoking_status == "Unknown" ~ 4)
-
+###---Data Preparing
 
 #Dealing with N/A in BMI column
 stroke$bmi[stroke$bmi=="N/A"]=NA
-
 stroke$bmi<-as.numeric(stroke$bmi)
-stroke$bmi[is.na(stroke$bmi)]<-mean(stroke$bmi)
 bmi_means <- mean(stroke$bmi, na.rm = T)
+stroke$bmi[is.na(stroke$bmi)] <- mean(stroke$bmi, na.rm = TRUE)
+stroke$bmi <- round(stroke$bmi, digits = 2) #rounding values
 
-#wróc potem niżej do klasyfikacji bmi 
+
+#demografic data into numerical
+stroke$ever_married <- case_when(stroke$ever_married == "Yes" ~ 1, stroke$ever_married == "No" ~ 0)
+
+stroke$work_type <- case_when(stroke$work_type == "children" ~ 0,
+                      stroke$work_type == "Never_worked" ~ 1,
+                      stroke$work_type == "Private" ~ 2,
+                      stroke$work_type == "Govt_job" ~ 3,
+                      stroke$work_type == "Self-employed" ~ 4)
+
+stroke$Residence_type <- case_when(stroke$Residence_type == "Urban" ~ 1,
+                           stroke$Residence_type == "Rural" ~ 0)
 
 #characters as factors
-stroke$ever_married<- factor(stroke$ever_married)
-stroke$work_type<- factor(stroke$work_type)
-stroke$Residence_type<- factor(stroke$Residence_type)
-stroke$stroke <- factor(stroke$stroke)
+#stroke$stroke <- factor(stroke$stroke, levels = c(0,1), labels = c("No", "Yes"))
+#stroke$hypertension <- factor(stroke$hypertension, levels = c(0,1), labels = c("No", "Yes"))
+#stroke$heart_disease <- factor(stroke$heart_disease, levels = c(0,1), labels = c("No", "Yes"))
+
+#Smoking Status as numeric
+stroke$smoking_status <- case_when(stroke$smoking_status == "never smoked" ~ 0, stroke$smoking_status == "formerly smoked" ~ 1,
+stroke$smoking_status == "smokes" ~ 2,stroke$smoking_status == "Unknown" ~ 3)
+
+#remove Other gender because it is only one case
+stroke <- subset(stroke, gender != "3")
+#gender as numeric
+stroke$gender <- case_when(
+  stroke$gender == "Female" ~ 0,
+  stroke$gender == "Male" ~ 1)
+
 
 
 
@@ -108,45 +118,42 @@ smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function
 smoking
 
 #plot:BMI
-#BMI classification as numeric (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
+#BMI classification (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
 stroke_bmi_class <- stroke
 
-stroke$bmi = case_when(
-stroke$bmi < 16.5 ~ "severly underweight",
-stroke$bmi < 18.5 ~ "underweight",
-stroke$bmi >= 18.5 & stroke$bmi <= 24.9  ~ "normal weight",
-stroke$bmi >= 25 & stroke$bmi <= 29.9 ~ "overweight",
-stroke$bmi >= 30 & stroke$bmi <= 34.9 ~ "obesity class 1",
-stroke$bmi >= 35 & stroke$bmi <= 39.9 ~ "obesity class 2",
-stroke$bmi >= 40 ~ "obesity class 3")
+stroke_bmi_class$bmi = case_when(
+  stroke_bmi_class$bmi < 16.5 ~ "severly underweight",
+  stroke_bmi_class$bmi < 18.5 ~ "underweight",
+  stroke_bmi_class$bmi >= 18.5 & stroke_bmi_class$bmi <= 24.9  ~ "normal weight",
+  stroke_bmi_class$bmi >= 25 & stroke_bmi_class$bmi <= 29.9 ~ "overweight",
+  stroke_bmi_class$bmi >= 30 & stroke_bmi_class$bmi <= 34.9 ~ "obesity class 1",
+  stroke_bmi_class$bmi >= 35 & stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
+  stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
 
-stroke$bmi <- case_when(
-stroke$bmi == "severly underweight" ~ 1,
-stroke$bmi == "underweight" ~ 2,
-stroke$bmi == "normal weight" ~ 3,
-stroke$bmi == "overweight" ~ 4,
-stroke$bmi == "obesity class 1" ~ 5,
-stroke$bmi == "obesity class 2" ~ 6,
-stroke$bmi == "obesity class 3" ~ 3)
+#stroke_bmi_class$bmi <- case_when(
+  #stroke_bmi_class$bmi == "severly underweight" ~ 1,
+  #stroke_bmi_class$bmi == "underweight" ~ 2,
+  #stroke_bmi_class$bmi == "normal weight" ~ 3,
+  #stroke_bmi_class$bmi == "overweight" ~ 4,
+  #stroke_bmi_class$bmi == "obesity class 1" ~ 5,
+  #stroke_bmi_class$bmi == "obesity class 2" ~ 6,
+  #stroke_bmi_class$bmi == "obesity class 3" ~ 3)
 
 
-bmi_df <-stroke %>% select(bmi)
-bmi_df$bmi <- as.factor(bmi_df$bmi)
-counts <- table(bmi_df$bmi)
-print(counts)
-bmi_df <- as.data.frame(counts)
+#bmi_df_new <- stroke_bmi_class %>% select(bmi)
+#bmi_df$bmi <- as.factor(bmi_df$bmi)
+#counts <- table(bmi_df$bmi)
+#print(counts)
+#bmi_df <- as.data.frame(counts)
 
 #Define custom colors for each bmi
 #bin_colors <- c("red", "green", "blue", "yellow", "purple")
 #Create a histogram
-bmi <- ggplot(bmi_df, aes(x = Var1, y = Freq)) +
-  geom_col() +
-  theme(legend.position = "bottom")
- bmi
+
 
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
-stroke_smok_stat = table(stroke$smoking_status,stroke$stroke) 
+stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 
 colnames(stroke_smok_stat)[1] <- "No Stroke"
 colnames(stroke_smok_stat)[2] <- "Stroke"
 print(stroke_smok_stat)
@@ -211,7 +218,7 @@ glucose_no_stroke
   #geom_point(alpha = 0.5, aes(color = gender))
 
 
-### Correlations
+###---Correlations
 #correlation: age & hypertension
 cor(stroke$age, stroke$hypertension, use = "complete.obs")
 
@@ -221,34 +228,49 @@ cor(stroke$age, stroke$heart_disease, use = "complete.obs")
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 
+#all
+correlations_all <- cor(stroke, method = "pearson", use = "complete.obs")
+corrplot(correlations_all, method="circle")
 
-####Creating new data frame for chi square analysis
+
+###---Creating new data frame for chi square analysis
 new_dt <- stroke %>%
-  select(gender, hypertension, stroke, smoking_status)
-
-
-#remove Other gender for chi square table
-new_dt <- subset(new_dt, gender != "3")
+  dplyr::select(gender, hypertension, stroke, smoking_status)
 
 #tables for chi square
-stroke_gender = table(new_dt$gender,new_dt$stroke) 
+stroke_gender <- table(new_dt$gender,new_dt$stroke) 
 print(stroke_gender)
 
-hyperten_gender = table(new_dt$gender,new_dt$hypertension) 
+hyperten_gender <- table(new_dt$gender,new_dt$hypertension) 
 print(hyperten_gender)
 
 hyperten_stroke = table(new_dt$hypertension,new_dt$stroke) 
 print(hyperten_stroke)
 
+
+
 #chi square analysis
 print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
 print(chisq.test(hyperten_stroke)) 
+
 # --- there are no evidences to reject the null hypothesis
 
 #mcnemar test
 mcnemar.test(hyperten_stroke)
 # --- there is no evidence to reject the null hypothesis
+
+
+#others:
+gender_stroke <- stroke %>% 
+  dplyr::select(gender, stroke)  %>% 
+  table()
+print(gender_stroke)
+
+
+
+
+
 
 
 ### ---------------------Prediction Model 
