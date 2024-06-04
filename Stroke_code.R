@@ -43,6 +43,19 @@ setwd(path)
 stroke <- read.csv("data/healthcare-dataset-stroke-data.csv", 
                    stringsAsFactors = F)
 
+#exploring data set
+dim(stroke) #dimensions
+head(stroke) #first 6 rows
+str(stroke) #structure
+names(stroke) #column names
+summary(stroke) #summary for each columns
+skim(stroke) #missing values, quantile, etc. for numeric var
+create_report(stroke) #full data profile with visualizations
+table(stroke$stroke) #count stroke patients - 249 with stroke
+
+
+
+
 #Gender as numeric
 stroke$gender <- case_when(
   stroke$gender == "Female" ~ 1,
@@ -56,24 +69,15 @@ stroke$smoking_status <- case_when(
   stroke$smoking_status == "smokes" ~ 3,
   stroke$smoking_status == "Unknown" ~ 4)
 
-#BMI classification as numeric (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
-stroke$bmi = case_when(
-    stroke$bmi < 16.5 ~ "severly underweight",
-    stroke$bmi < 18.5 ~ "underweight",
-    stroke$bmi >= 18.5 & stroke$bmi <= 24.9  ~ "normal weight",
-    stroke$bmi >= 25 & stroke$bmi <= 29.9 ~ "overweight",
-    stroke$bmi >= 30 & stroke$bmi <= 34.9 ~ "obesity class 1",
-    stroke$bmi >= 35 & stroke$bmi <= 39.9 ~ "obesity class 2",
-    stroke$bmi >= 40 ~ "obesity class 3")
 
-stroke$bmi <- case_when(
-  stroke$bmi == "severly underweight" ~ 1,
-  stroke$bmi == "underweight" ~ 2,
-  stroke$bmi == "normal weight" ~ 3,
-  stroke$bmi == "overweight" ~ 4,
-  stroke$bmi == "obesity class 1" ~ 5,
-  stroke$bmi == "obesity class 2" ~ 6,
-  stroke$bmi == "obesity class 3" ~ 3,)
+#Dealing with N/A in BMI column
+stroke$bmi[stroke$bmi=="N/A"]=NA
+
+stroke$bmi<-as.numeric(stroke$bmi)
+stroke$bmi[is.na(stroke$bmi)]<-mean(stroke$bmi)
+bmi_means <- mean(stroke$bmi, na.rm = T)
+
+#wróc potem niżej do klasyfikacji bmi 
 
 #characters as factors
 stroke$ever_married<- factor(stroke$ever_married)
@@ -82,15 +86,7 @@ stroke$Residence_type<- factor(stroke$Residence_type)
 stroke$stroke <- factor(stroke$stroke)
 
 
-#exploring data set
-dim(stroke) #dimensions
-head(stroke) #first 6 rows
-str(stroke) #structure
-names(stroke) #column names
-summary(stroke) #summary for each columns
-skim(stroke) #missing values, quantile, etc. for numeric var
-create_report(stroke) #full data profile with visualizations
-table(stroke$stroke) #count stroke patients
+
 
 ### Plots-Visualizations of Data from Database"Stroke"
 
@@ -112,6 +108,28 @@ smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function
 smoking
 
 #plot:BMI
+#BMI classification as numeric (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
+stroke_bmi_class <- stroke
+
+stroke$bmi = case_when(
+stroke$bmi < 16.5 ~ "severly underweight",
+stroke$bmi < 18.5 ~ "underweight",
+stroke$bmi >= 18.5 & stroke$bmi <= 24.9  ~ "normal weight",
+stroke$bmi >= 25 & stroke$bmi <= 29.9 ~ "overweight",
+stroke$bmi >= 30 & stroke$bmi <= 34.9 ~ "obesity class 1",
+stroke$bmi >= 35 & stroke$bmi <= 39.9 ~ "obesity class 2",
+stroke$bmi >= 40 ~ "obesity class 3")
+
+stroke$bmi <- case_when(
+stroke$bmi == "severly underweight" ~ 1,
+stroke$bmi == "underweight" ~ 2,
+stroke$bmi == "normal weight" ~ 3,
+stroke$bmi == "overweight" ~ 4,
+stroke$bmi == "obesity class 1" ~ 5,
+stroke$bmi == "obesity class 2" ~ 6,
+stroke$bmi == "obesity class 3" ~ 3)
+
+
 bmi_df <-stroke %>% select(bmi)
 bmi_df$bmi <- as.factor(bmi_df$bmi)
 counts <- table(bmi_df$bmi)
