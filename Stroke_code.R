@@ -251,8 +251,6 @@ both_model <- stats::step(stroke_regression, direction = "both")
 
 
 
-
-
 #Feature Ranking and Selection Algorithm
 boruta_output <- Boruta(stroke ~ ., data = stroke, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
@@ -264,7 +262,6 @@ importances[order(-importances$meanImp), ]
 boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
 boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
 # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
-
 
 
 
@@ -289,31 +286,7 @@ pred_table <- table(test_data$stroke, predict_model)
 pred_table
 
 #accuracy
-accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
-#Accuracy of the Decision Tree Model is 0.95.
-
-
-#Another Way - Xboost
-#Creating Xgboost Model
-#model_gbm = gbm(stroke ~.,data = train_data, distribution = "multinomial", cv.folds = 10,shrinkage = .01,n.minobsinnode = 10, n.trees = 500)       
-#summary(model_gbm)
-
-#Prediction (Test Data)
-#pred_test <- predict.gbm(object = model_gbm,newdata = test_data, n.trees = 500, type = "response")
-#pred_test
-
-#Giving Names 
-#class_names <- colnames(pred_test)[apply(pred_test, 1, which.max)]
-#result <- data.frame(test_data$stroke, class_names)
-#print(result)
-
-#Confusing Matrix
-#conf_mat <- confusionMatrix(as.factor(test$stroke), as.factor(class_names))
- #print(conf_mat)
-
-
-
-
+accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) #Accuracy of the Decision Tree Model is 0.95.
 
 
 
@@ -322,15 +295,15 @@ accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
 #new data frame with variable stroke as numeric for gbm function
 new_df <- stroke 
 new_df$stroke <-as.numeric(new_df$stroke) -1
-#a co gdybym usuneła zmienne faktorowe i zostawiła ttylko numeryczne?
+#rm character variables
 new_df <-subset(new_df, select = -c(ever_married, work_type, Residence_type, smoking_status))
-#Boosting with gbm function
+#Basic Boosting Tree (gbm function)
 model_gbm <- gbm::gbm(formula=stroke~., data = new_df)
 model_gbm
 head(predict(model_gbm, type = "response"))
-
 tibble::as_tibble(summary(model_gbm))
 
+#Random Forest (caret pckg)
 set.seed(1)
 model1 <- train(
   stroke ~ .,
@@ -422,17 +395,17 @@ model5$results %>% arrange(Accuracy)
 plot(model5)
 
 
+#Random Forest (method from publication: Jared P. Lander "R dla każdego")
+stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
+strokeX <- build.x(stroke_formula, data = stroke, contrast = F)          
+strokeY <- build.y(stroke_formula, data = stroke)
+strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
 
-
-#visualization of Random Forest
-#xgb.plot.tree(model5)
-#xgboost::xgb.importance(model5)
-#xgb.plot.multi.trees(model5$finalModel, feature_names = model5$coefnames)
-
-
-
-
-
+strokeBoost <- xgboost(data = strokeX, label = strokeY, max.depth = 3, eta = 3,
+                       nrounds = 20, objective = "binary:logistic")
+xgb.plot.multi.trees(strokeBoost, feature_names = colnames(strokeX))
+xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX)))
+#the most important features - gluocose level and age
 
 
 ###---Other Way to Using Caret
@@ -463,6 +436,7 @@ dotplot(results)
   #References:
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
+#https://www.r-bloggers.com/2023/12/a-complete-guide-to-stepwise-regression-in-r/
 #https://www.appsilon.com/post/r-decision-treees
 #https://www.utstat.toronto.edu/~brunner/oldclass/appliedf11/handouts/2101f11StepwiseLogisticR.pdf
 #https://www.projectpro.io/recipes/apply-gradient-boosting-for-classification-r
