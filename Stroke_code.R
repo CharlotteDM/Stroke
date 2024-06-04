@@ -32,7 +32,8 @@ library(party)
 library(magrittr)
 library(Boruta)
 library(gridExtra)
-install.packages("DiagrammerR")
+library(MASS)
+library(DiagrammerR)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -243,11 +244,12 @@ summary(stroke_regression)
 #Coefficient Plot
 coefplot(stroke_regression)
 
-#step model with lower AIC
-Null <- glm(stroke~1, data = stroke)
-stats::step(Null, k = 2, direction = "both", 
-     scope = stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi)
-#the last model has the lowest AIC
+#Backward Stepwise Regression
+backward_model <- stats::step(stroke_regression, direction = "backward")
+#Both Directions Regression
+both_model <- stats::step(stroke_regression, direction = "both")
+
+
 
 
 
@@ -320,7 +322,8 @@ accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
 #new data frame with variable stroke as numeric for gbm function
 new_df <- stroke 
 new_df$stroke <-as.numeric(new_df$stroke) -1
-
+#a co gdybym usuneła zmienne faktorowe i zostawiła ttylko numeryczne?
+new_df <-subset(new_df, select = -c(ever_married, work_type, Residence_type, smoking_status))
 #Boosting with gbm function
 model_gbm <- gbm::gbm(formula=stroke~., data = new_df)
 model_gbm
@@ -461,5 +464,6 @@ dotplot(results)
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
 #https://www.appsilon.com/post/r-decision-treees
+#https://www.utstat.toronto.edu/~brunner/oldclass/appliedf11/handouts/2101f11StepwiseLogisticR.pdf
 #https://www.projectpro.io/recipes/apply-gradient-boosting-for-classification-r
 #https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
