@@ -66,69 +66,47 @@ stroke$bmi[is.na(stroke$bmi)] <- mean(stroke$bmi, na.rm = TRUE)
 stroke$bmi <- round(stroke$bmi, digits = 2) #rounding values
 
 
-#demografic data into numerical
-stroke$ever_married <- case_when(stroke$ever_married == "Yes" ~ 1, stroke$ever_married == "No" ~ 0)
-
-stroke$work_type <- case_when(stroke$work_type == "children" ~ 0,
-                      stroke$work_type == "Never_worked" ~ 1,
-                      stroke$work_type == "Private" ~ 2,
-                      stroke$work_type == "Govt_job" ~ 3,
-                      stroke$work_type == "Self-employed" ~ 4)
-
-stroke$Residence_type <- case_when(stroke$Residence_type == "Urban" ~ 1,
-                           stroke$Residence_type == "Rural" ~ 0)
-
-#characters as factors
-#stroke$stroke <- factor(stroke$stroke, levels = c(0,1), labels = c("No", "Yes"))
-#stroke$hypertension <- factor(stroke$hypertension, levels = c(0,1), labels = c("No", "Yes"))
-#stroke$heart_disease <- factor(stroke$heart_disease, levels = c(0,1), labels = c("No", "Yes"))
-
-#Smoking Status as numeric
-stroke$smoking_status <- case_when(stroke$smoking_status == "never smoked" ~ 0, stroke$smoking_status == "formerly smoked" ~ 1,
-stroke$smoking_status == "smokes" ~ 2,stroke$smoking_status == "Unknown" ~ 3)
-
-#remove Other gender because it is only one case
-stroke <- subset(stroke, gender != "3")
-#gender as numeric
-stroke$gender <- case_when(
-  stroke$gender == "Female" ~ 0,
-  stroke$gender == "Male" ~ 1)
-
-
-
-
 
 ### Plots-Visualizations of Data from Database"Stroke"
+#preparing new data frame for plots
+stroke_plots <- stroke
+#characters as factors
+stroke_plots$stroke <- factor(stroke_plots$stroke, levels = c(0,1), labels = c("No", "Yes"))
+stroke_plots$hypertension <- factor(stroke_plots$hypertension, levels = c(0,1), labels = c("No", "Yes"))
+stroke_plots$heart_disease <- factor(stroke_plots$heart_disease, levels = c(0,1), labels = c("No", "Yes"))
+
+
 
 #plot: gender
-gender <- ggplot(stroke, aes(x=reorder(gender, gender, function(x)-length(x)))) +
+gender <- ggplot(stroke_plots, aes(x=reorder(gender, gender, function(x)-length(x)))) +
   geom_bar(fill='lightblue') +  labs(x='Gender')
 gender
-table(stroke$gender)
+table(stroke_plots$gender)
 
 #plot: type of residence
-residence <- ggplot(stroke, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
+residence <- ggplot(stroke_plots, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
   geom_bar(fill='lightgreen') +  labs(x='Residence Type')
 residence
 
 
 #plot: smoking status
-smoking <- ggplot(stroke, aes(x=reorder(smoking_status, smoking_status, function(x)-length(x)))) +
+smoking <- ggplot(stroke_plots, aes(x=reorder(smoking_status, smoking_status, function(x)-length(x)))) +
   geom_bar(fill='lightpink') +  labs(x='Smoking Status')
 smoking
 
 #plot:BMI
 #BMI classification (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
-stroke_bmi_class <- stroke
 
-stroke_bmi_class$bmi = case_when(
-  stroke_bmi_class$bmi < 16.5 ~ "severly underweight",
-  stroke_bmi_class$bmi < 18.5 ~ "underweight",
-  stroke_bmi_class$bmi >= 18.5 & stroke_bmi_class$bmi <= 24.9  ~ "normal weight",
-  stroke_bmi_class$bmi >= 25 & stroke_bmi_class$bmi <= 29.9 ~ "overweight",
-  stroke_bmi_class$bmi >= 30 & stroke_bmi_class$bmi <= 34.9 ~ "obesity class 1",
-  stroke_bmi_class$bmi >= 35 & stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
-  stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
+#stroke_bmi_class <- stroke
+
+#stroke_bmi_class$bmi <- dplyr::case_when(
+  #stroke_bmi_class$bmi < 16.5 ~ "severly underweight",
+  #Stroke_bmi_class$bmi < 18.5 ~ "underweight",
+  #stroke_bmi_class$sbmi >= 18.5 & stroke_bmi_class$bmi <= 24.9  ~ "normal weight",
+  #stroke_bmi_class$bmi >= 25 &  stroke_bmi_class$bmi <= 29.9 ~ "overweight",
+  #stroke_bmi_class$bmi >= 30 & stroke_bmi_class$bmi <= 34.9 ~ "obesity class 1",
+  #stroke_bmi_class$bmi >= 35 &  stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
+  #stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
 
 #stroke_bmi_class$bmi <- case_when(
   #stroke_bmi_class$bmi == "severly underweight" ~ 1,
@@ -150,6 +128,28 @@ stroke_bmi_class$bmi = case_when(
 #bin_colors <- c("red", "green", "blue", "yellow", "purple")
 #Create a histogram
 
+
+#demografic data into numerical
+#stroke$ever_married <- case_when(stroke$ever_married == "Yes" ~ 1, stroke$ever_married == "No" ~ 0)
+
+#stroke$work_type <- case_when(stroke$work_type == "children" ~ 0,
+#stroke$work_type == "Never_worked" ~ 1,
+#stroke$work_type == "Private" ~ 2,
+#stroke$work_type == "Govt_job" ~ 3,
+#stroke$work_type == "Self-employed" ~ 4)
+
+#stroke$Residence_type <- case_when(stroke$Residence_type == "Urban" ~ 1,stroke$Residence_type == "Rural" ~ 0)
+
+#Smoking Status as numeric
+#stroke$smoking_status <- case_when(stroke$smoking_status == "never smoked" ~ 0, stroke$smoking_status == "formerly smoked" ~ 1,
+#stroke$smoking_status == "smokes" ~ 2,stroke$smoking_status == "Unknown" ~ 3)
+
+#remove Other gender because it is only one case
+stroke <- subset(stroke, gender != "3")
+#gender as numeric
+stroke$gender <- case_when(
+  stroke$gender == "Female" ~ 0,
+  stroke$gender == "Male" ~ 1)
 
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
@@ -228,13 +228,32 @@ cor(stroke$age, stroke$heart_disease, use = "complete.obs")
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
 
+
+###variables as numeric - for future analysis
+stroke_new<-stroke
+stroke_new$ever_married <- case_when(stroke_new$ever_married == "Yes" ~ 1, stroke_new$ever_married == "No" ~ 0)
+
+stroke_new$work_type <- case_when(stroke_new$work_type == "children" ~ 0,
+                                    stroke_new$work_type == "Never_worked" ~ 1,
+                                    stroke_new$work_type == "Private" ~ 2,
+                                    stroke_new$work_type == "Govt_job" ~ 3,
+                                    stroke_new$work_type == "Self-employed" ~ 4)
+
+stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,stroke_new$Residence_type == "Rural" ~ 0)
+
+stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
+                                       stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
+
+
+
+
 #all
-correlations_all <- cor(stroke, method = "pearson", use = "complete.obs")
+correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
 corrplot(correlations_all, method="circle")
 
 
 ###---Creating new data frame for chi square analysis
-new_dt <- stroke %>%
+new_dt <- stroke_new %>%
   dplyr::select(gender, hypertension, stroke, smoking_status)
 
 #tables for chi square
@@ -261,16 +280,6 @@ mcnemar.test(hyperten_stroke)
 # --- there is no evidence to reject the null hypothesis
 
 
-#others:
-gender_stroke <- stroke %>% 
-  dplyr::select(gender, stroke)  %>% 
-  table()
-print(gender_stroke)
-
-
-
-
-
 
 
 ### ---------------------Prediction Model 
@@ -280,7 +289,7 @@ print(gender_stroke)
 
 #simple formula
 stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
-                         data = stroke, family = binomial)
+                         data = stroke_new, family = binomial)
 summary(stroke_regression)
 
 #Coefficient Plot
@@ -294,7 +303,7 @@ both_model <- stats::step(stroke_regression, direction = "both")
 
 
 #Feature Ranking and Selection Algorithm
-boruta_output <- Boruta(stroke ~ ., data = stroke, doTrace = 0)
+boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
 boruta_signif <- getSelectedAttributes(rough_fix_mod)
 importances <- attStats(rough_fix_mod)
@@ -311,9 +320,9 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 ###---Decision Tree (The Simplest Method for Me)
 
 #splitting data
-sample_data = sample.split(stroke, SplitRatio = 0.8)
-train_data <- subset(stroke, sample_data == TRUE)
-test_data <- subset(stroke, sample_data == FALSE)
+sample_data = sample.split(stroke_new, SplitRatio = 0.8)
+train_data <- subset(stroke_new, sample_data == TRUE)
+test_data <- subset(stroke_new, sample_data == FALSE)
 
 prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - 
 #reflects the actual distribution of the result in the entire study group
@@ -328,39 +337,44 @@ pred_table <- table(test_data$stroke, predict_model)
 pred_table
 
 #accuracy
-accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) #Accuracy of the Decision Tree Model is 0.95.
+accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) #Accuracy of the Decision Tree Model is 0.39.
 
 
 
 ###---Random Forest (with Package Caret)
 
 #new data frame with variable stroke as numeric for gbm function only
-new_df <- stroke 
-new_df$stroke <-as.numeric(new_df$stroke) -1
+#new_df <- stroke_new 
+#new_df$stroke <-as.numeric(new_df$stroke) -1
 #new data frame with rmd uncsr character variables
-new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
+#new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
 
 #Basic Boosting Tree (gbm function)
-model_gbm <- gbm::gbm(formula=stroke~., data = new_df)
+set.seed(1)
+model_gbm <- gbm::gbm(formula=stroke~., data = stroke_new)
 model_gbm
 head(predict(model_gbm, type = "response"))
 tibble::as_tibble(summary(model_gbm))
 
+#Dependent Variable as character for Random Forest Analysis and making new data frame
+stroke_new_st_ch <- stroke_new
+stroke_new_st_ch$stroke <- as.character(stroke_new_st_ch$stroke)
+
 #Random Forest (caret pckg)
 set.seed(1)
-model1 <- train(stroke ~ ., data = stroke, method = 'gbm', verbose = FALSE)
+model1 <- train(stroke ~ ., data = stroke_new_st_ch, method = 'gbm', verbose = FALSE)
 model1
 plot(model1)
 
 #preprocessing
 set.seed(1) 
-model2 <- train(stroke ~ ., data = stroke, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
+model2 <- train(stroke ~ ., data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model2
 plot(model2)
 
 #splitting data
 set.seed(1)
-inTraining <- createDataPartition(stroke$stroke, p = .80, list = FALSE)
+inTraining <- createDataPartition(stroke_new_st_ch$stroke, p = .80, list = FALSE)
 training <- stroke[inTraining,]
 testing  <- stroke[-inTraining,]
 
@@ -392,7 +406,7 @@ predictions = predict(model4, newdata = test.features)
 set.seed(1)
 tuneGrid <- expand.grid(n.trees = c(50, 100),interaction.depth = c(1, 2), shrinkage = 0.1, n.minobsinnode = 10)
 
-model5 <- train(stroke ~ .,data = stroke, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, tuneGrid = tuneGrid, verbose = FALSE)
+model5 <- train(stroke ~ .,data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, tuneGrid = tuneGrid, verbose = FALSE)
 model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
@@ -400,8 +414,8 @@ plot(model5)
 
 #---XGBOOST (method from publication: Jared P. Lander "R dla każdego")
 stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
-strokeX <- build.x(stroke_formula, data = stroke, contrast = F)          
-strokeY <- build.y(stroke_formula, data = stroke)
+strokeX <- build.x(stroke_formula, data = stroke_new_st_ch, contrast = F)          
+strokeY <- build.y(stroke_formula, data = stroke_new_st_ch)
 strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
 strokeBoost <- xgboost(data = strokeX, label = strokeY, max.depth = 3, eta = 3,
                        nrounds = 20, objective = "binary:logistic")
@@ -418,13 +432,13 @@ xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 #train the LVQ model
 set.seed(1)
-modelLvq <- train(stroke~., data=stroke, method="lvq", trControl=control)
+modelLvq <- train(stroke~., data=stroke_new_st_ch, method="lvq", trControl=control)
 #train the GBM model
 set.seed(1)
-modelGbm <- train(stroke~., data=stroke, method="gbm", trControl=control, verbose=FALSE)
+modelGbm <- train(stroke~., data=stroke_new_st_ch, method="gbm", trControl=control, verbose=FALSE)
 #train the SVM model
 set.seed(1)
-modelSvm <- train(stroke~., data=stroke, method="svmRadial", trControl=control)
+modelSvm <- train(stroke~., data=stroke_new_st_ch, method="svmRadial", trControl=control)
 # collect resamples
 results <- resamples(list(LVQ=modelLvq, GBM=modelGbm, SVM=modelSvm))
 #summary
@@ -442,34 +456,34 @@ preProcess=c("center", "scale")
 
 # Linear Discriminant Analysis
 set.seed(seed_ml)
-fit.lda <- train(stroke~., data=stroke, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.lda <- train(stroke~., data=stroke_new_st_ch, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
 # Logistic Regression
 set.seed(seed_ml)
-fit.glm <- train(stroke~., data=stroke, method="glm", metric=metric, trControl=control)
+fit.glm <- train(stroke~., data=stroke_new_st_ch, method="glm", metric=metric, trControl=control)
 # GLMNET
 set.seed(seed_ml)
-fit.glmnet <- train(stroke~., data=stroke, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.glmnet <- train(stroke~., data=stroke_new_st_ch, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
 # SVM Radial
 set.seed(seed_ml)
-fit.svmRadial <- train(stroke~., data=stroke, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
+fit.svmRadial <- train(stroke~., data=stroke_new_st_ch, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
 # kNN
 set.seed(seed_ml)
-fit.knn <- train(stroke~., data=stroke, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.knn <- train(stroke~., data=stroke_new_st_ch, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
 # CART
 set.seed(seed_ml)
-fit.cart <- train(stroke~., data=stroke, method="rpart", metric=metric, trControl=control)
+fit.cart <- train(stroke~., data=stroke_new_st_ch, method="rpart", metric=metric, trControl=control)
 # C5.0
 set.seed(seed_ml)
-fit.c50 <- train(stroke~., data=stroke, method="C5.0", metric=metric, trControl=control)
+fit.c50 <- train(stroke~., data=stroke_new_st_ch, method="C5.0", metric=metric, trControl=control)
 # Bagged CART
 set.seed(seed_ml)
-fit.treebag <- train(stroke~., data=stroke, method="treebag", metric=metric, trControl=control)
+fit.treebag <- train(stroke~., data=stroke_new_st_ch, method="treebag", metric=metric, trControl=control)
 # Random Forest
 set.seed(seed_ml)
-fit.rf <- train(stroke~., data=stroke, method="rf", metric=metric, trControl=control)
+fit.rf <- train(stroke~., data=stroke_new_st_ch, method="rf", metric=metric, trControl=control)
 # Stochastic Gradient Boosting (Generalized Boosted Modeling)
 set.seed(seed_ml)
-fit.gbm <- train(stroke~., data=stroke, method="gbm", metric=metric, trControl=control, verbose = F)
+fit.gbm <- train(stroke~., data=stroke_new_st_ch, method="gbm", metric=metric, trControl=control, verbose = F)
 
 
 results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
@@ -478,57 +492,12 @@ results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
 summary(results)
 bwplot(results)
 dotplot(results)
-#glmnet seems the best
+#glmnet i gbm seem the best
 
 
 
 
 
-###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
-control_ml <- trainControl(method="repeatedcv", number=10, repeats=3)
-seed_ml <- 1
-metric <- "Accuracy"
-preProcess=c("center", "scale")
-
-# Linear Discriminant Analysis
-set.seed(seed_ml)
-fit.lda <- train(stroke~., data=new_df_1, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
-# Logistic Regression
-set.seed(seed_ml)
-fit.glm <- train(stroke~., data=new_df_1, method="glm", metric=metric, trControl=control)
-# GLMNET
-set.seed(seed_ml)
-fit.glmnet <- train(stroke~., data=new_df_1, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
-# SVM Radial
-set.seed(seed_ml)
-fit.svmRadial <- train(stroke~., data=new_df_1, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
-# kNN
-set.seed(seed_ml)
-fit.knn <- train(stroke~., data=new_df_1, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
-# CART
-set.seed(seed_ml)
-fit.cart <- train(stroke~., data=new_df_1, method="rpart", metric=metric, trControl=control)
-# C5.0
-set.seed(seed_ml)
-fit.c50 <- train(stroke~., data=new_df_1, method="C5.0", metric=metric, trControl=control)
-# Bagged CART
-set.seed(seed_ml)
-fit.treebag <- train(stroke~., data=new_df_1, method="treebag", metric=metric, trControl=control)
-# Random Forest
-set.seed(seed_ml)
-fit.rf <- train(stroke~., data=new_df_1, method="rf", metric=metric, trControl=control)
-# Stochastic Gradient Boosting (Generalized Boosted Modeling)
-set.seed(seed_ml)
-fit.gbm <- train(stroke~., data=new_df_1, method="gbm", metric=metric, trControl=control, verbose = F)
-
-
-results_2 <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
-                          svm=fit.svmRadial, knn=fit.knn, cart=fit.cart, c50=fit.c50,
-                          bagging=fit.treebag, rf=fit.rf, gbm=fit.gbm))
-summary(results_2)
-bwplot(results_2)
-dotplot(results_2)
-#glmnet seems the best
 
 
 
