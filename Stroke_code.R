@@ -66,7 +66,6 @@ stroke$bmi[is.na(stroke$bmi)] <- mean(stroke$bmi, na.rm = TRUE)
 stroke$bmi <- round(stroke$bmi, digits = 2) #rounding values
 
 
-
 ### Plots-Visualizations of Data from Database"Stroke"
 #preparing new data frame for plots
 stroke_plots <- stroke
@@ -74,7 +73,6 @@ stroke_plots <- stroke
 stroke_plots$stroke <- factor(stroke_plots$stroke, levels = c(0,1), labels = c("No", "Yes"))
 stroke_plots$hypertension <- factor(stroke_plots$hypertension, levels = c(0,1), labels = c("No", "Yes"))
 stroke_plots$heart_disease <- factor(stroke_plots$heart_disease, levels = c(0,1), labels = c("No", "Yes"))
-
 
 
 #plot: gender
@@ -244,10 +242,20 @@ stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,
 stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
                                        stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
 
+#ggplot - glucose level and bmi
+ggplot(data = stroke_new, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
+  geom_point(alpha = 0.5) +
+  scale_color_brewer(palette="Set1")
 
+#boxplot - glucose level and bmi
+p <- ggplot(stroke_new, aes(x=as.character(stroke), y=avg_glucose_level), color = stroke) + 
+  geom_boxplot() + 
+  geom_jitter(shape=16, position=position_jitter(0.2), color = "lightblue") +
+  labs(title="Stroke & Avg Glucose Level",x="Stroke", y = "Average Glucose Level") 
+ 
+?geom_boxplot
 
-
-#all
+#all variables - correlations
 correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
 corrplot(correlations_all, method="circle")
 
@@ -271,13 +279,10 @@ print(hyperten_stroke)
 #chi square analysis
 print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
-print(chisq.test(hyperten_stroke)) 
-
-# --- there are no evidences to reject the null hypothesis
+print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null hypothesis
 
 #mcnemar test
-mcnemar.test(hyperten_stroke)
-# --- there is no evidence to reject the null hypothesis
+mcnemar.test(hyperten_stroke) #there is no evidence to reject the null hypothesis
 
 
 
@@ -320,9 +325,12 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 ###---Decision Tree (The Simplest Method for Me)
 
 #splitting data
+set.seed(1)
 sample_data = sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
 test_data <- subset(stroke_new, sample_data == FALSE)
+dim(test_data)
+dim(train_data)
 
 prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - 
 #reflects the actual distribution of the result in the entire study group
@@ -330,24 +338,38 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke -
 #decision tree with ctree function
 model_tree<- ctree(stroke ~ ., train_data)
 plot(model_tree)
+class(model_tree)
 
 #prediction for decision tree
 predict_model <- predict(model_tree, test_data) 
 pred_table <- table(test_data$stroke, predict_model) 
 pred_table
+dim(pred_table)
 
 #accuracy
-accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) #Accuracy of the Decision Tree Model is 0.39.
+accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
+accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
+
+
+
 
 
 
 ###---Random Forest (with Package Caret)
-
-#new data frame with variable stroke as numeric for gbm function only
-#new_df <- stroke_new 
-#new_df$stroke <-as.numeric(new_df$stroke) -1
 #new data frame with rmd uncsr character variables
 #new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
+
+stroke_bag <- randomForest(stroke ~ ., data = train_data, mtry = 13, 
+                          importance = TRUE, ntrees = 500)
+stroke_bag
+
+stroke_bag_tst_pred <- predict(stroke_bag, newdata = test_data)
+plot(stroke_bag_tst_pred,test_data$stroke,
+     xlab = "Predicted", ylab = "Actual",
+     main = "Predicted vs Actual: Bagged Model, Test Data",
+     col = "dodgerblue", pch = 20)
+grid()
+abline(0, 1, col = "darkorange", lwd = 2)
 
 #Basic Boosting Tree (gbm function)
 set.seed(1)
@@ -412,6 +434,9 @@ model5$results %>% arrange(Accuracy)
 plot(model5)
 
 
+
+
+
 #---XGBOOST (method from publication: Jared P. Lander "R dla każdego")
 stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
 strokeX <- build.x(stroke_formula, data = stroke_new_st_ch, contrast = F)          
@@ -446,7 +471,8 @@ summary(results)
 #boxplots of results
 bwplot(results)
 #dotplot of results
-dotplot(results)
+dotplot(results) #gbm & glmnet look the best
+
 
 ###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
 control_ml <- trainControl(method="repeatedcv", number=10, repeats=3)
@@ -493,6 +519,8 @@ summary(results)
 bwplot(results)
 dotplot(results)
 #glmnet i gbm seem the best
+
+
 
 
 
