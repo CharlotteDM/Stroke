@@ -206,6 +206,28 @@ glucose_no_stroke <- stroke %>%
 glucose_no_stroke
 
 
+#ggplot - glucose level and bmi
+plot_gluc_bmi <- ggplot(data = stroke_plots, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
+  geom_point(alpha = 0.5) +
+  scale_color_brewer(palette="Set1") +
+  labs(title="Average Glucose Level $ BMI", x="Average Glucose Level", y = "BMI") +
+  theme(
+    plot.title = element_text(color = "navy", size = 15, face = "bold.italic"),
+    axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
+    axis.title.y = element_text(color = "navy", size = 13, face = "bold"))
+
+#boxplot - glucose level 
+box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), y=avg_glucose_level), color = stroke) + 
+  geom_boxplot(show.legend = T) + 
+  geom_jitter(shape=14, position=position_jitter(0.2), color = "lightblue") +
+  labs(title="Stroke & Avg Glucose Level", x="Stroke", y = "Average Glucose Level") +
+  theme(
+    plot.title = element_text(color = "navy", size = 15, face = "bold.italic"),
+    axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
+    axis.title.y = element_text(color = "navy", size = 13, face = "bold"))
+
+
+
 
 #plot(stroke$avg_glucose_level, stroke$bmi, 
      #xlab = "Poziom glukozy", ylab = "BMI",
@@ -242,18 +264,7 @@ stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,
 stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
                                        stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
 
-#ggplot - glucose level and bmi
-ggplot(data = stroke_new, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
-  geom_point(alpha = 0.5) +
-  scale_color_brewer(palette="Set1")
-
-#boxplot - glucose level and bmi
-p <- ggplot(stroke_new, aes(x=as.character(stroke), y=avg_glucose_level), color = stroke) + 
-  geom_boxplot() + 
-  geom_jitter(shape=16, position=position_jitter(0.2), color = "lightblue") +
-  labs(title="Stroke & Avg Glucose Level",x="Stroke", y = "Average Glucose Level") 
- 
-?geom_boxplot
+?labs
 
 #all variables - correlations
 correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
