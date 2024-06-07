@@ -1,4 +1,7 @@
-####---------------Project "Stroke Prediction"
+#-------------------------------------------------#
+#########---------------Project "Stroke Prediction"
+#-------------------------------------------------#
+
 
 library(dplyr)
 library(skimr)
@@ -43,7 +46,12 @@ setwd(path)
 stroke <- read.csv("data/healthcare-dataset-stroke-data.csv", 
                    stringsAsFactors = F)
 
-###---Exploring Data Set
+
+
+#-------------------------------------------------#
+###-----------------------------Exploring Data Set
+#-------------------------------------------------#
+
 dim(stroke) #dimensions
 head(stroke) #first 6 rows
 tail(stroke) #last 6 rows
@@ -55,8 +63,9 @@ create_report(stroke) #full data profile with visualizations
 table(stroke$stroke) #count stroke patients - 249 with stroke
 
 
-
-###---Data Preparing
+#-------------------------------------------------#
+###---------------------------------Data Preparing
+#-------------------------------------------------#
 
 #Dealing with N/A in BMI column
 stroke$bmi[stroke$bmi=="N/A"]=NA
@@ -65,15 +74,18 @@ bmi_means <- mean(stroke$bmi, na.rm = T)
 stroke$bmi[is.na(stroke$bmi)] <- mean(stroke$bmi, na.rm = TRUE)
 stroke$bmi <- round(stroke$bmi, digits = 2) #rounding values
 
+#-----------------------------------------------------#
+### Plots Visualizations of Data from Database"Stroke"
+#-----------------------------------------------------#
 
-### Plots-Visualizations of Data from Database"Stroke"
 #preparing new data frame for plots
 stroke_plots <- stroke
 #characters as factors
 stroke_plots$stroke <- factor(stroke_plots$stroke, levels = c(0,1), labels = c("No", "Yes"))
 stroke_plots$hypertension <- factor(stroke_plots$hypertension, levels = c(0,1), labels = c("No", "Yes"))
 stroke_plots$heart_disease <- factor(stroke_plots$heart_disease, levels = c(0,1), labels = c("No", "Yes"))
-
+#remove Other gender because it is only one case
+stroke_plots <- subset(stroke_plots, gender != "Other")
 
 #plot: gender
 gender <- ggplot(stroke_plots, aes(x=reorder(gender, gender, function(x)-length(x)))) +
@@ -85,7 +97,6 @@ table(stroke_plots$gender)
 residence <- ggplot(stroke_plots, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
   geom_bar(fill='lightgreen') +  labs(x='Residence Type')
 residence
-
 
 #plot: smoking status
 smoking <- ggplot(stroke_plots, aes(x=reorder(smoking_status, smoking_status, function(x)-length(x)))) +
@@ -127,29 +138,6 @@ smoking
 #Create a histogram
 
 
-#demografic data into numerical
-#stroke$ever_married <- case_when(stroke$ever_married == "Yes" ~ 1, stroke$ever_married == "No" ~ 0)
-
-#stroke$work_type <- case_when(stroke$work_type == "children" ~ 0,
-#stroke$work_type == "Never_worked" ~ 1,
-#stroke$work_type == "Private" ~ 2,
-#stroke$work_type == "Govt_job" ~ 3,
-#stroke$work_type == "Self-employed" ~ 4)
-
-#stroke$Residence_type <- case_when(stroke$Residence_type == "Urban" ~ 1,stroke$Residence_type == "Rural" ~ 0)
-
-#Smoking Status as numeric
-#stroke$smoking_status <- case_when(stroke$smoking_status == "never smoked" ~ 0, stroke$smoking_status == "formerly smoked" ~ 1,
-#stroke$smoking_status == "smokes" ~ 2,stroke$smoking_status == "Unknown" ~ 3)
-
-#remove Other gender because it is only one case
-stroke <- subset(stroke, gender != "3")
-#gender as numeric
-stroke$gender <- case_when(
-  stroke$gender == "Female" ~ 0,
-  stroke$gender == "Male" ~ 1)
-
-
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
 stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 
 colnames(stroke_smok_stat)[1] <- "No Stroke"
@@ -163,58 +151,19 @@ colnames(hyperten_smok_stat)[2] <- "Hypertension"
 print(hyperten_smok_stat)
 
 
-# plot: Average Glucose Level in the Group of Patients with Stroke
-glucose_and_stroke <- stroke %>%
-  filter (stroke == 1) %>%
-ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
-  stat_halfeye(
-    adjust = 0.5,
-    justification = -0.2,
-    .width = 0,
-    point_colour = NA
-  ) +
-  geom_boxplot(
-    width = 0.11,
-    outlier.color = NA,
-    alpha = 0.4
-  ) + ggdist::stat_dots(
-    side = "left",
-    justification = 1.1,
-    binwidth = 0.25
-  ) 
-glucose_and_stroke
-
-# plot: Average Glucose Level in the Group of Patients with no Stroke
-glucose_no_stroke <- stroke %>%
-  filter (stroke == 0) %>%
-  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
-  stat_halfeye(
-    adjust = 0.5,
-    justification = -0.2,
-    .width = 0,
-    point_colour = NA
-  ) +
-  geom_boxplot(
-    width = 0.11,
-    outlier.color = NA,
-    alpha = 0.4
-  ) + ggdist::stat_dots(
-    side = "left",
-    justification = 1.1,
-    binwidth = 0.25
-  ) 
-glucose_no_stroke
-
-
 #ggplot - glucose level and bmi
 plot_gluc_bmi <- ggplot(data = stroke_plots, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
   geom_point(alpha = 0.5) +
   scale_color_brewer(palette="Set1") +
-  labs(title="Average Glucose Level $ BMI", x="Average Glucose Level", y = "BMI") +
+  stat_smooth(aes(group = 1), method = "lm", formula = y ~ x, se = FALSE) +
+  labs(title="Average Glucose Level & BMI", x="Average Glucose Level", y = "BMI", colour = "Status of smoking") +
   theme(
-    plot.title = element_text(color = "navy", size = 15, face = "bold.italic"),
+    plot.title = element_text(color = "navy", size = 15, face = "bold"),
     axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
-    axis.title.y = element_text(color = "navy", size = 13, face = "bold"))
+    axis.title.y = element_text(color = "navy", size = 13, face = "bold"),
+    legend.title = element_text(color = "navy", size = 10, face = "bold"))
+ggplotly(plot_gluc_bmi) 
+
 
 #boxplot - glucose level 
 box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), y=avg_glucose_level), color = stroke) + 
@@ -225,9 +174,39 @@ box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), y=avg_glucose_le
     plot.title = element_text(color = "navy", size = 15, face = "bold.italic"),
     axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
     axis.title.y = element_text(color = "navy", size = 13, face = "bold"))
+box_glucose
 
 
+# plot: Average Glucose Level in the Group of Patients with Stroke
+glucose_and_stroke <- stroke_plots %>%
+  filter (stroke == 1) %>%
+  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = as.factor(gender))) +
+  stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
+  geom_boxplot(width = 0.11,outlier.color = NA, alpha = 0.4) + 
+  ggdist::stat_dots(side = "left",justification = 1.1,binwidth = 0.25) +
+  labs(title="Gender & Avg Glucose Level in the Group of Patients with Stroke", x="Gender", y = "Average Glucose Level", color = "Gender") +
+  theme(
+    plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
+    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
+    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold"),
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"))
+glucose_and_stroke
 
+
+# plot: Average Glucose Level in the Group of Patients with no Stroke
+glucose_no_stroke <- stroke_plots %>%
+  filter (stroke == 0) %>%
+  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
+  stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
+  geom_boxplot(width = 0.11,outlier.color = NA,alpha = 0.4) + 
+  ggdist::stat_dots(side = "left", justification = 1.1, binwidth = 0.25)+
+  labs(title="Gender & Avg Glucose Level with Patient with no Stroke", x="Gender", y = "Average Glucose Level", color = "Gender") +
+  theme(
+    plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
+    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
+    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold"),
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"))
+glucose_no_stroke
 
 #plot(stroke$avg_glucose_level, stroke$bmi, 
      #xlab = "Poziom glukozy", ylab = "BMI",
@@ -238,7 +217,10 @@ box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), y=avg_glucose_le
   #geom_point(alpha = 0.5, aes(color = gender))
 
 
-###---Correlations
+#-------------------------------------------------#
+###-----------------------------------Correlations
+#-------------------------------------------------#
+
 #correlation: age & hypertension
 cor(stroke$age, stroke$hypertension, use = "complete.obs")
 
@@ -264,14 +246,20 @@ stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,
 stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
                                        stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
 
-?labs
+stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
+
+
 
 #all variables - correlations
 correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
 corrplot(correlations_all, method="circle")
 
 
-###---Creating new data frame for chi square analysis
+
+#-------------------------------------------------#
+###-----------------------------Chi square analysis
+#-------------------------------------------------#
+#new data frame for chi square
 new_dt <- stroke_new %>%
   dplyr::select(gender, hypertension, stroke, smoking_status)
 
@@ -285,8 +273,6 @@ print(hyperten_gender)
 hyperten_stroke = table(new_dt$hypertension,new_dt$stroke) 
 print(hyperten_stroke)
 
-
-
 #chi square analysis
 print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
@@ -297,11 +283,13 @@ mcnemar.test(hyperten_stroke) #there is no evidence to reject the null hypothesi
 
 
 
+#-------------------------------------------------#
+### -------------------------------Predictions Model 
+#-------------------------------------------------#
 
-### ---------------------Prediction Model 
-
-###----Generalized Linear Regression 
-
+#-------------------------------------------------#
+###-------------------Generalized Linear Regression 
+#-------------------------------------------------#
 
 #simple formula
 stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
@@ -315,8 +303,6 @@ coefplot(stroke_regression)
 backward_model <- stats::step(stroke_regression, direction = "backward")
 #Both Directions Regression
 both_model <- stats::step(stroke_regression, direction = "both")
-
-
 
 #Feature Ranking and Selection Algorithm
 boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
@@ -332,8 +318,10 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 
 
 
-
+#-------------------------------------------------#
 ###---Decision Tree (The Simplest Method for Me)
+#-------------------------------------------------#
+
 
 #splitting data
 set.seed(1)
@@ -365,8 +353,9 @@ accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
 
 
 
-
-###---Random Forest (with Package Caret)
+#-------------------------------------------------#
+###-------------Random Forest (with Package Caret)
+#-------------------------------------------------#
 #new data frame with rmd uncsr character variables
 #new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
 
@@ -447,8 +436,9 @@ plot(model5)
 
 
 
-
+#-------------------------------------------------#
 #---XGBOOST (method from publication: Jared P. Lander "R dla każdego")
+#-------------------------------------------------#
 stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
 strokeX <- build.x(stroke_formula, data = stroke_new_st_ch, contrast = F)          
 strokeY <- build.y(stroke_formula, data = stroke_new_st_ch)
@@ -461,9 +451,15 @@ xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX
 
 
 
+#-------------------------------------------------#
 ### ---------------------Evaluation
+#-------------------------------------------------#
 
+#-------------------------------------------------#
 ###---With Using Caret pck 
+#-------------------------------------------------#
+
+
 #prepare training scheme
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 #train the LVQ model
@@ -484,8 +480,9 @@ bwplot(results)
 #dotplot of results
 dotplot(results) #gbm & glmnet look the best
 
-
+#-------------------------------------------------#
 ###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
+#-------------------------------------------------#
 control_ml <- trainControl(method="repeatedcv", number=10, repeats=3)
 seed_ml <- 1
 metric <- "Accuracy"
