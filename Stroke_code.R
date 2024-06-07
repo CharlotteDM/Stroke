@@ -105,17 +105,16 @@ smoking
 
 #plot:BMI
 #BMI classification (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
+stroke_bmi_class <- stroke_plots
 
-#stroke_bmi_class <- stroke
-
-#stroke_bmi_class$bmi <- dplyr::case_when(
-  #stroke_bmi_class$bmi < 16.5 ~ "severly underweight",
-  #Stroke_bmi_class$bmi < 18.5 ~ "underweight",
-  #stroke_bmi_class$sbmi >= 18.5 & stroke_bmi_class$bmi <= 24.9  ~ "normal weight",
-  #stroke_bmi_class$bmi >= 25 &  stroke_bmi_class$bmi <= 29.9 ~ "overweight",
-  #stroke_bmi_class$bmi >= 30 & stroke_bmi_class$bmi <= 34.9 ~ "obesity class 1",
-  #stroke_bmi_class$bmi >= 35 &  stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
-  #stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
+stroke_bmi_class$bmi <- dplyr::case_when(
+  stroke_bmi_class$bmi < 16.5 ~ "severly underweight",
+  stroke_bmi_class$bmi < 18.5 ~ "underweight",
+  stroke_bmi_class$bmi >= 18.5 & stroke_bmi_class$bmi <= 24.9  ~ "normal weight",
+  stroke_bmi_class$bmi >= 25 &  stroke_bmi_class$bmi <= 29.9 ~ "overweight",
+  stroke_bmi_class$bmi >= 30 & stroke_bmi_class$bmi <= 34.9 ~ "obesity class 1",
+  stroke_bmi_class$bmi >= 35 &  stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
+  stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
 
 #stroke_bmi_class$bmi <- case_when(
   #stroke_bmi_class$bmi == "severly underweight" ~ 1,
@@ -136,6 +135,14 @@ smoking
 #Define custom colors for each bmi
 #bin_colors <- c("red", "green", "blue", "yellow", "purple")
 #Create a histogram
+bmi_plot <- ggplot(stroke_bmi_class, aes(x=bmi)) +
+  geom_bar(fill='red') +
+  labs(title="BMI", x="BMI", y = "count") +
+  theme(
+    plot.title = element_text(color = "darkred", size = 15, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(color = "darkred", size = 13, face = "bold.italic"),
+    axis.title.y = element_text(color = "darkred", size = 13, face = "bold.italic"))
+bmi_plot
 
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
@@ -247,7 +254,7 @@ stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoke
                                        stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
 
 stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
-
+stroke_new <- subset(stroke_new, gender != "Other")
 
 
 #all variables - correlations
@@ -303,6 +310,7 @@ coefplot(stroke_regression)
 backward_model <- stats::step(stroke_regression, direction = "backward")
 #Both Directions Regression
 both_model <- stats::step(stroke_regression, direction = "both")
+
 
 #Feature Ranking and Selection Algorithm
 boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
