@@ -37,10 +37,18 @@ The average glucose level in this study group is
 106.15.
 In the study group, one person marked the gender "other". The record was removed to make the data visualization more readable. Ultimately, 5,109 observations were obtained.
 
-This chart shows .
+The charts show the distribution of demographic variables: gender, place of residence and place of work..
 
-```{r EU_FR=plot, dev='png', out.width="150%", echo=FALSE}
-plot()
+```{r gender=plot, dev='png', out.width="150%", echo=FALSE}
+plot(gender)
+```
+
+```{r residence=plot, dev='png', out.width="150%", echo=FALSE}
+plot(residence)
+```
+
+```{r work=plot, dev='png', out.width="150%", echo=FALSE}
+plot(work)
 ```
 
 # Task Two: Build prediction models

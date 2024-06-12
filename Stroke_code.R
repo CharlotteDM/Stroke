@@ -107,7 +107,7 @@ residence
 work <- ggplot(stroke_plots, aes(x=work_type)) +
   geom_bar(fill='violet') + 
   labs(x='Type of Work') +
-  geom_text(aes(label = ..count..), stat = "count", vjust = -1, colour = "black")
+  geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 work
 
 #plot: smoking status
