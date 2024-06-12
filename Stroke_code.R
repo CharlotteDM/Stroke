@@ -39,6 +39,7 @@ library(randomForest)
 library(DiagrammerR)
 library(glmnet)
 library(C50)
+library(vetiver)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -89,18 +90,24 @@ stroke_plots <- subset(stroke_plots, gender != "Other")
 
 #plot: gender
 gender <- ggplot(stroke_plots, aes(x=reorder(gender, gender, function(x)-length(x)))) +
-  geom_bar(fill='lightblue') +  labs(x='Gender')
+  geom_bar(fill='lightblue') +  
+  labs(x='Gender') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 gender
 table(stroke_plots$gender)
 
 #plot: type of residence
 residence <- ggplot(stroke_plots, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
-  geom_bar(fill='lightgreen') +  labs(x='Residence Type')
+  geom_bar(fill='lightgreen') + 
+  labs(x='Residence Type') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 residence
 
 #plot: smoking status
-smoking <- ggplot(stroke_plots, aes(x=reorder(smoking_status, smoking_status, function(x)-length(x)))) +
-  geom_bar(fill='lightpink') +  labs(x='Smoking Status')
+smoking <- ggplot(stroke_plots, aes(x=smoking_status)) +
+  geom_bar(fill='lightpink') +
+  labs(x='Smoking Status') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 smoking
 
 #plot:BMI
@@ -535,7 +542,6 @@ summary(results)
 bwplot(results)
 dotplot(results)
 #glmnet i gbm seem the best
-
 
 
 
