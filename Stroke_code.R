@@ -36,10 +36,10 @@ library(magrittr)
 library(Boruta)
 library(gridExtra)
 library(randomForest)
-library(DiagrammerR)
+library(DiagrammeR)
 library(glmnet)
 library(C50)
-library(vetiver)
+
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
