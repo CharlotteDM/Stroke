@@ -26,18 +26,16 @@ source("Stroke_code.R")
 ***
 
 
-
-
 ```{r}
 summary(stroke)
 skim(stroke)
 ```
 
 The average age in the study group is  
-43.3. The average glucose level in this study group is 
-106.
-
-
+43.3. 
+The average glucose level in this study group is 
+106.15.
+In the study group, one person marked the gender "other". The record was removed to make the data visualization more readable. Ultimately, 5,109 observations were obtained.
 
 This chart shows .
 

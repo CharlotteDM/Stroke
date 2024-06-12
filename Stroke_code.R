@@ -103,6 +103,13 @@ residence <- ggplot(stroke_plots, aes(x=reorder(Residence_type, Residence_type, 
   geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 residence
 
+#plot: type of work
+work <- ggplot(stroke_plots, aes(x=work_type)) +
+  geom_bar(fill='violet') + 
+  labs(x='Type of Work') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = -1, colour = "black")
+work
+
 #plot: smoking status
 smoking <- ggplot(stroke_plots, aes(x=smoking_status)) +
   geom_bar(fill='lightpink') +
