@@ -155,7 +155,7 @@ bmi_plot <- ggplot(stroke_bmi_class, aes(x=bmi)) +
     axis.title.x = element_text(color = "darkred", size = 13, face = "bold.italic"),
     axis.title.y = element_text(color = "darkred", size = 13, face = "bold.italic"))
 bmi_plot
-
+class(stroke_bmi_class$bmi)
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
 stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 

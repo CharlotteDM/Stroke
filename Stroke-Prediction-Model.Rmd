@@ -102,11 +102,22 @@ plot(residence)
 plot(work)
 ```
 
-##The charts show the distribution of health related variables: hypertension, heart disease, smoking status.
+##The charts below show the distribution of health related variables: hypertension, heart disease, smoking status.
 
+```{r smoking=plot, dev='png', out.width="150%", echo=FALSE}
+plot(smoking)
+```
 
+```{r hypertension=plot, dev='png', out.width="150%", echo=FALSE}
+plot(hypertension)
+```
 
+```{r heart_disease=plot, dev='png', out.width="150%", echo=FALSE}
+plot(heart_disease)
+```
 
+##BMI data was organized according to the "BMI Classification Percentile And Cut Off Points" classification. The BMI criteria distributed in the study group are presented in the chart below.
 
-
-
+```{r bmi=plot, dev='png', out.width="150%", echo=FALSE}
+plot(bmi)
+```
