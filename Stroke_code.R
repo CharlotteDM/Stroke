@@ -121,6 +121,7 @@ smoking
 hypertension <- ggplot(stroke_plots, aes(x=as.factor(hypertension))) +
   geom_bar(fill='darkblue') + 
   labs(x='Hypertension') +
+  scale_x_discrete(labels = c("0" = "no hypertension", "1" = "hypertension")) +
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 hypertension
 
@@ -128,10 +129,9 @@ hypertension
 heart_disease <- ggplot(stroke_plots, aes(x=as.factor(heart_disease))) +
   geom_bar(fill='darkgreen') + 
   labs(x='Heart Disease') +
+  scale_x_discrete(labels = c("0" = "no stroke", "1" = "stroke")) +
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 heart_disease
-
-
 
 #plot:BMI
 #BMI classification (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)

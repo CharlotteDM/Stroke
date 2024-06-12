@@ -48,16 +48,16 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-## This is a report about prediction of stroke. Orginal data came from Coursera Platform - "Build and deploy a stroke prediction model using R". The dataset includes information on patients such as:
+This is a report about prediction of stroke. Original data came from Coursera Platform - "Build and deploy a stroke prediction model using R". The dataset includes information on patients such as:
 
 - __age__,
 - __BMI__,
 - __average glucose level__,
 - __heart disease__,
-- __hypertension__
+- __hypertension__,
 - __and more demographic details__
 
-##The dataset consists of 5110 observations, with 249 patients experiencing a stroke. This imbalance indicates that only 4.87% of the total observations involve stroke occurrences.
+The dataset consists of 5110 observations, with 249 patients experiencing a stroke. This imbalance indicates that only 4.87% of the total observations involve stroke occurrences.
 
 ***
 
@@ -73,7 +73,7 @@ The average glucose level in this study group is
 106.15.
 In the study group, one person marked the gender "other". The record was removed to make the data visualization more readable. Ultimately, 5,109 observations were obtained.
 
-The charts show the distribution of demographic variables: gender, place of residence and place of work..
+The charts show the distribution of demographic variables: gender, place of residence and place of work.
 
 ```{r gender=plot, dev='png', out.width="150%", echo=FALSE}
 plot(gender)
