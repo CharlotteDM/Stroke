@@ -1,0 +1,106 @@
+---
+title: "A stroke prediction model"
+output: html_document
+author: "Karolina Dyrla-Mularczyk"
+source: "Data from Coursera - Build and deploy a stroke prediction model using R"
+---
+```{r setup, include=FALSE}
+library("knitr")
+library("tidyverse")
+library("plotly")
+library("htmlwidgets")
+source("Stroke_code.R")
+```
+
+## This is a report about prediction of stroke. Orginal data cames from Coursera Platform - "Build and deploy a stroke prediction model using R". The dataset includes information on patients such as:
+
+- __age__,
+- __BMI__,
+- __average glucose level__,
+- __heart disease__,
+- __hypertension__
+- __and more demographic details__
+
+##The dataset consists of 5110 observations, with 249 patients experiencing a stroke. This imbalance indicates that only 4.87% of the total observations involve stroke occurrences.
+
+***
+
+
+
+
+```{r}
+summary(stroke)
+skim(stroke)
+```
+
+The average age in the study group is  
+43.3. The average glucose level in this study group is 
+106.
+
+
+
+This chart shows .
+
+```{r EU_FR=plot, dev='png', out.width="150%", echo=FALSE}
+plot()
+```
+
+# Task Two: Build prediction models
+
+```{r}
+
+```
+
+
+
+
+# Task Three: Evaluate and select prediction models
+
+```{r}
+
+```
+
+
+
+# Task Four: Deploy the prediction model
+
+```{r}
+
+```
+
+
+
+
+# Task Five: Findings and Conclusions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
