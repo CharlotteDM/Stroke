@@ -87,58 +87,7 @@ plot(residence)
 plot(work)
 ```
 
-# Task Two: Build prediction models
-
-```{r}
-
-```
-
-
-
-
-# Task Three: Evaluate and select prediction models
-
-```{r}
-
-```
-
-
-
-# Task Four: Deploy the prediction model
-
-```{r}
-
-```
-
-
-
-
-# Task Five: Findings and Conclusions
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+##The charts show the distribution of health related variables: hypertension, heart disease, smoking status.
 
 
 

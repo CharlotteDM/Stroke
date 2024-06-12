@@ -117,6 +117,22 @@ smoking <- ggplot(stroke_plots, aes(x=smoking_status)) +
   geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 smoking
 
+#plot: hypertension
+hypertension <- ggplot(stroke_plots, aes(x=as.factor(hypertension))) +
+  geom_bar(fill='darkblue') + 
+  labs(x='Hypertension') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
+hypertension
+
+#plot: heart disease
+heart_disease <- ggplot(stroke_plots, aes(x=as.factor(heart_disease))) +
+  geom_bar(fill='darkgreen') + 
+  labs(x='Heart Disease') +
+  geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
+heart_disease
+
+
+
 #plot:BMI
 #BMI classification (references: https://www.ncbi.nlm.nih.gov/books/NBK541070/)
 stroke_bmi_class <- stroke_plots
@@ -464,12 +480,13 @@ plot(model5)
 stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
 strokeX <- build.x(stroke_formula, data = stroke_new_st_ch, contrast = F)          
 strokeY <- build.y(stroke_formula, data = stroke_new_st_ch)
-strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
+#strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
+class(strokeY)
 strokeBoost <- xgboost(data = strokeX, label = strokeY, max.depth = 3, eta = 3,
                        nrounds = 20, objective = "binary:logistic")
 xgb.plot.multi.trees(strokeBoost, feature_names = colnames(strokeX))
 xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX)))
-#the most important features - glucose level and age
+#the most important features - bmi, glucose level and age
 
 
 
