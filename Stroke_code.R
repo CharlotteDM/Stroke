@@ -91,7 +91,7 @@ stroke_plots <- subset(stroke_plots, gender != "Other")
 #plot: gender
 gender <- ggplot(stroke_plots, aes(x=reorder(gender, gender, function(x)-length(x)))) +
   geom_bar(fill='lightblue') +  
-  labs(x='Gender') +
+  labs(x='Gender', title = "Distribution of the Variable: Gender") +
   geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 gender
 table(stroke_plots$gender)
@@ -99,28 +99,28 @@ table(stroke_plots$gender)
 #plot: type of residence
 residence <- ggplot(stroke_plots, aes(x=reorder(Residence_type, Residence_type, function(x)-length(x)))) +
   geom_bar(fill='lightgreen') + 
-  labs(x='Residence Type') +
+  labs(x='Residence Type', title = "Distribution of the Variable: Residence") +
   geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 residence
 
 #plot: type of work
 work <- ggplot(stroke_plots, aes(x=work_type)) +
   geom_bar(fill='violet') + 
-  labs(x='Type of Work') +
+  labs(x='Type of Work', title = "Distribution of the Variable: Type of Work") +
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 work
 
 #plot: smoking status
 smoking <- ggplot(stroke_plots, aes(x=smoking_status)) +
   geom_bar(fill='lightpink') +
-  labs(x='Smoking Status') +
+  labs(x='Smoking Status', title = "Distribution of the Variable: Smoking Status") +
   geom_text(aes(label = ..count..), stat = "count", vjust = 2, colour = "black")
 smoking
 
 #plot: hypertension
 hypertension <- ggplot(stroke_plots, aes(x=as.factor(hypertension))) +
   geom_bar(fill='darkblue') + 
-  labs(x='Hypertension') +
+  labs(x='Hypertension', , title = "Distribution of the Variable: Hypertension") +
   scale_x_discrete(labels = c("0" = "no hypertension", "1" = "hypertension")) +
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 hypertension
@@ -128,7 +128,7 @@ hypertension
 #plot: heart disease
 heart_disease <- ggplot(stroke_plots, aes(x=as.factor(heart_disease))) +
   geom_bar(fill='darkgreen') + 
-  labs(x='Heart Disease') +
+  labs(x='Heart Disease', , title = "Distribution of the Variable: Heart Disease") +
   scale_x_discrete(labels = c("0" = "no stroke", "1" = "stroke")) +
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black")
 heart_disease
@@ -146,24 +146,6 @@ stroke_bmi_class$bmi <- dplyr::case_when(
   stroke_bmi_class$bmi >= 35 &  stroke_bmi_class$bmi <= 39.9 ~ "obesity class 2",
   stroke_bmi_class$bmi >= 40 ~ "obesity class 3")
 
-#stroke_bmi_class$bmi <- case_when(
-  #stroke_bmi_class$bmi == "severly underweight" ~ 1,
-  #stroke_bmi_class$bmi == "underweight" ~ 2,
-  #stroke_bmi_class$bmi == "normal weight" ~ 3,
-  #stroke_bmi_class$bmi == "overweight" ~ 4,
-  #stroke_bmi_class$bmi == "obesity class 1" ~ 5,
-  #stroke_bmi_class$bmi == "obesity class 2" ~ 6,
-  #stroke_bmi_class$bmi == "obesity class 3" ~ 3)
-
-
-#bmi_df_new <- stroke_bmi_class %>% select(bmi)
-#bmi_df$bmi <- as.factor(bmi_df$bmi)
-#counts <- table(bmi_df$bmi)
-#print(counts)
-#bmi_df <- as.data.frame(counts)
-
-#Define custom colors for each bmi
-#bin_colors <- c("red", "green", "blue", "yellow", "purple")
 #Create a histogram
 bmi_plot <- ggplot(stroke_bmi_class, aes(x=bmi)) +
   geom_bar(fill='red') +
@@ -578,6 +560,9 @@ dotplot(results)
 
 
   #References:
+#Data:
+#https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+  #Materials on websites:
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
 #https://www.r-bloggers.com/2023/12/a-complete-guide-to-stepwise-regression-in-r/
@@ -586,4 +571,8 @@ dotplot(results)
 #https://www.projectpro.io/recipes/apply-gradient-boosting-for-classification-r
 #https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
 #https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/
+
+  #Articles:
+# Choudhury, M. J. H., Chowdhury, M. T. I., Nayeem, A., & Jahan, W. A. (2015). Modifiable and non-modifiable risk factors of stroke: A review update. Journal of National Institute of Neurosciences Bangladesh, 1(1), 22-26.
+# Hankey, G. J. (2020). Population impact of potentially modifiable risk factors for stroke. Stroke, 51(3), 719-728.
 

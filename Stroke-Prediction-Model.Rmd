@@ -1,11 +1,8 @@
 ---
-title: "A stroke prediction model"
+title: "A Stroke Prediction Model"
 author: "Karolina Dyrla-Mularczyk"
-output:
-  html_document: default
-  pdf_document: default
-  word_document: default
-source: "Data from Coursera - Build and deploy a stroke prediction model using R"
+output: html_document
+
 ---
 ```{r setup, include=FALSE}
 library("knitr")
@@ -48,34 +45,52 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-This is a report about prediction of stroke. Original data came from Coursera Platform - "Build and deploy a stroke prediction model using R". The dataset includes information on patients such as:
+This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
 
-- __age__,
-- __BMI__,
-- __average glucose level__,
-- __heart disease__,
-- __hypertension__,
-- __and more demographic details__
+Stroke is a leading cause of death and disability worldwide, with significant public health implications. Some key facts about stroke:
+
+- __Stroke is the second leading cause of death globally, accounting for approximately 11% of all deaths (WHO).__
+- __Around 80% of strokes are preventable through lifestyle modifications such as healthy diet, regular exercise, and avoiding tobacco use.__
+- __High blood pressure is one of the most important modifiable risk factor for stroke.__
+- __Early recognition of stroke symptoms and prompt medical intervention can significantly improve outcomes and reduce disability.__
+- __Hence the need to identify risk factors and assess their importance in the stroke prediction model.This is important both from the perspective of the healthcare sector and from the patient's perspective.__
+
+The dataset came from Kaggle via Coursera and includes information on patients such as:
+
+- age,
+- BMI,
+- average glucose level,
+- heart disease,
+- hypertension,
+- and more demographic details
 
 The dataset consists of 5110 observations, with 249 patients experiencing a stroke. This imbalance indicates that only 4.87% of the total observations involve stroke occurrences.
 
 ***
 
+A few general informations about dataset:
 
 ```{r}
+
+dim(stroke) 
+head(stroke) 
+str(stroke) 
+names(stroke)
 summary(stroke)
 skim(stroke)
 ```
 
 The average age in the study group is  
-43.3. 
+__43.3__. 
 The average glucose level in this study group is 
-106.15.
+__106.15__.
 In the study group, one person marked the gender "other". The record was removed to make the data visualization more readable. Ultimately, 5,109 observations were obtained.
 
-The charts show the distribution of demographic variables: gender, place of residence and place of work.
+Missing values were found in the "bmi" column. It was decided to enter the average of all BMI measurements in the missing fields and round it to two decimal places.
 
-```{r gender=plot, dev='png', out.width="150%", echo=FALSE}
+The charts below show the distribution of demographic variables: gender, place of residence and place of work.
+
+```{r gender=plot, dev='png', out.width="150%",error = False, echo=FALSE}
 plot(gender)
 ```
 
