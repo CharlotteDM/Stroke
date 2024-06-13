@@ -157,6 +157,11 @@ bmi_plot <- ggplot(stroke_bmi_class, aes(x=bmi)) +
     axis.title.y = element_text(color = "darkred", size = 13, face = "bold.italic"))
 bmi_plot
 
+#overweight - description of the group 
+overweight <- stroke_bmi_class %>% dplyr::select(age, bmi) %>% dplyr::filter(bmi == "overweight")
+summary(overweight)
+m <- mean(overweight$age)
+round(m, digits = 2)
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
 stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 

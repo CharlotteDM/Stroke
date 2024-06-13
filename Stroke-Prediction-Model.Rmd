@@ -121,3 +121,9 @@ plot(heart_disease)
 ```{r echo=FALSE, warning=FALSE, bmi_plot=plot, dev='png', out.width="150%"}
 plot(bmi_plot)
 ```
+
+##As we could see, the majorty patients have overweight. This corresponds to disturbing reports from other studies regarding overweight. As we could read on the WHO page (https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight): 
+
+>"In 2022, 2.5 billion adults (18 years and older) were overweight. Of these, 890 million were living with obesity. In 2022, 43% of adults aged 18 years and over were overweight and 16% were living with obesity.
+
+
