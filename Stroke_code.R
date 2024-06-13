@@ -148,14 +148,15 @@ stroke_bmi_class$bmi <- dplyr::case_when(
 
 #Create a histogram
 bmi_plot <- ggplot(stroke_bmi_class, aes(x=bmi)) +
-  geom_bar(fill='red') +
+  geom_bar(fill='red', width = 0.8) +
   labs(title="BMI", x="BMI", y = "count") +
+  geom_text(aes(label = ..count..), stat = "count", vjust = -0.3, colour = "black") +
   theme(
     plot.title = element_text(color = "darkred", size = 15, face = "bold", hjust = 0.5),
     axis.title.x = element_text(color = "darkred", size = 13, face = "bold.italic"),
     axis.title.y = element_text(color = "darkred", size = 13, face = "bold.italic"))
 bmi_plot
-class(stroke_bmi_class$bmi)
+
 
 #tables: Smoking Status & Stroke; Smoking Status & Hypertension
 stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 
@@ -576,3 +577,5 @@ dotplot(results)
 # Choudhury, M. J. H., Chowdhury, M. T. I., Nayeem, A., & Jahan, W. A. (2015). Modifiable and non-modifiable risk factors of stroke: A review update. Journal of National Institute of Neurosciences Bangladesh, 1(1), 22-26.
 # Hankey, G. J. (2020). Population impact of potentially modifiable risk factors for stroke. Stroke, 51(3), 719-728.
 
+  #WHO
+#https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight

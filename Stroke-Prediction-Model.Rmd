@@ -118,6 +118,6 @@ plot(heart_disease)
 
 ##BMI data was organized according to the "BMI Classification Percentile And Cut Off Points" classification. The BMI criteria distributed in the study group are presented in the chart below.
 
-```{r bmi=plot, dev='png', out.width="150%", echo=FALSE}
-plot(bmi)
+```{r echo=FALSE, warning=FALSE, bmi_plot=plot, dev='png', out.width="150%"}
+plot(bmi_plot)
 ```
