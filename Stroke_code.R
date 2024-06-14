@@ -39,8 +39,9 @@ library(randomForest)
 library(DiagrammeR)
 library(glmnet)
 library(C50)
-library(nortest)
-
+library(plotROC)
+library(ROCR)
+library(OptimalCutpoints)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -353,9 +354,8 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 
 
 #-------------------------------------------------#
-###---Decision Tree (The Simplest Method for Me)
+###-----------------------------------Decision Tree
 #-------------------------------------------------#
-
 
 #splitting data
 set.seed(1)
@@ -385,12 +385,9 @@ accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
 
 
 
-
-
 #-------------------------------------------------#
 ###-------------Random Forest (with Package Caret)
 #-------------------------------------------------#
-
 stroke_bag <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13, 
                           importance = TRUE, ntrees = 500)
 stroke_bag
@@ -402,6 +399,21 @@ plot(stroke_bag_tst_pred,test_data$stroke,
      col = "dodgerblue", pch = 20)
 grid()
 abline(0, 1, col = "darkorange", lwd = 2)
+
+#Reciving Operating Characteristics
+rf <- randomForest(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, data=train_data)
+pred_rf <- predict(rf, test_data)
+roc.estimate <- calculate_roc(pred_rf, test_data$stroke)
+plot_journal_roc(single.rocplot)
+pred <- prediction(pred_rf, test_data$stroke)
+perf <- performance(pred,"tpr","fpr")
+plot(perf,col="darkorange")
+abline(0,1)
+
+pref_df <- data.frame(pred = pred_rf, truth = test_data$stroke)
+oc <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_df, tag.healthy = "0")
+summary(oc)
+plot(oc, which = 1)
 
 #Basic Boosting Tree (gbm function)
 set.seed(1)
@@ -491,8 +503,6 @@ xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX
 #-------------------------------------------------#
 ###---With Using Caret pck 
 #-------------------------------------------------#
-
-
 #prepare training scheme
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 #train the LVQ model
@@ -544,7 +554,7 @@ set.seed(seed_ml)
 fit.c50 <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="C5.0", metric=metric, trControl=control)
 # Bagged CART
 set.seed(seed_ml)
-fit.treebag <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi~, data=stroke_new_st_ch, method="treebag", metric=metric, trControl=control)
+fit.treebag <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="treebag", metric=metric, trControl=control)
 # Random Forest
 set.seed(seed_ml)
 fit.rf <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="rf", metric=metric, trControl=control)
@@ -559,9 +569,14 @@ results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
 summary(results)
 bwplot(results)
 dotplot(results)
-#glmnet i gbm seem the best
+#logistic, glmnet, svm, c50, rf and gbm seem the best
 
-
+#ROC
+pred_glm <- predict(fit.glm, test_data)
+pred_glm_df <- data.frame(pred = pred_glm, truth = test_data$stroke)
+oc <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_df, tag.healthy = "0")
+summary(oc)
+plot(oc, which = 1)
 
 
 
