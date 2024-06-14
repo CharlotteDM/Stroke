@@ -45,7 +45,7 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
+##This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
 
 Stroke is a leading cause of death and disability worldwide, with significant public health implications. Some key facts about stroke:
 
@@ -90,7 +90,7 @@ Missing values were found in the "bmi" column. It was decided to enter the avera
 
 The charts below show the distribution of demographic variables: gender, place of residence and place of work.
 
-```{r gender=plot, dev='png', out.width="150%",error = False, echo=FALSE}
+```{r gender=plot, dev='png', out.width="150%", echo=FALSE}
 plot(gender)
 ```
 
@@ -102,7 +102,7 @@ plot(residence)
 plot(work)
 ```
 
-##The charts below show the distribution of health related variables: hypertension, heart disease, smoking status.
+The charts below show the distribution of health related variables: hypertension, heart disease, smoking status.
 
 ```{r smoking=plot, dev='png', out.width="150%", echo=FALSE}
 plot(smoking)
@@ -116,14 +116,16 @@ plot(hypertension)
 plot(heart_disease)
 ```
 
-##BMI data was organized according to the "BMI Classification Percentile And Cut Off Points" classification. The BMI criteria distributed in the study group are presented in the chart below.
+BMI data was organized according to the "BMI Classification Percentile And Cut Off Points" classification. The BMI criteria distributed in the study group are presented in the chart below.
 
 ```{r echo=FALSE, warning=FALSE, bmi_plot=plot, dev='png', out.width="150%"}
 plot(bmi_plot)
 ```
 
-##As we could see, the majorty patients have overweight. This corresponds to disturbing reports from other studies regarding overweight. As we could read on the WHO page (https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight): 
+As we could see, the majorty patients have overweight. This corresponds to disturbing reports from other studies regarding overweight. As we could read on the WHO page (https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight): 
 
 >"In 2022, 2.5 billion adults (18 years and older) were overweight. Of these, 890 million were living with obesity. In 2022, 43% of adults aged 18 years and over were overweight and 16% were living with obesity.
+
+In the studied group there is 1610 pateients with overweight. Which constitutes __'m'__ of the entire group.
 
 

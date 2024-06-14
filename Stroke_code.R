@@ -39,6 +39,7 @@ library(randomForest)
 library(DiagrammeR)
 library(glmnet)
 library(C50)
+library(nortest)
 
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -160,20 +161,25 @@ bmi_plot
 #overweight - description of the group 
 overweight <- stroke_bmi_class %>% dplyr::select(age, bmi) %>% dplyr::filter(bmi == "overweight")
 summary(overweight)
-m <- mean(overweight$age)
-round(m, digits = 2)
+m <- mean(overweight$age) 
+m <- round(m, digits = 2)
+m
+percentage <- (1610/5109)*100
 
-#tables: Smoking Status & Stroke; Smoking Status & Hypertension
+#table: Smoking Status & Stroke
 stroke_smok_stat <- table(stroke$smoking_status,stroke$stroke) 
 colnames(stroke_smok_stat)[1] <- "No Stroke"
 colnames(stroke_smok_stat)[2] <- "Stroke"
 print(stroke_smok_stat)
+print(chisq.test(stroke_smok_stat))
 
-
+#table: Smoking Status & Hypertension
 hyperten_smok_stat = table(stroke$smoking_status,stroke$hypertension) 
 colnames(hyperten_smok_stat)[1] <- "No Hypertension"
 colnames(hyperten_smok_stat)[2] <- "Hypertension"
 print(hyperten_smok_stat)
+print(chisq.test(hyperten_smok_stat))
+
 
 
 #ggplot - glucose level and bmi
@@ -233,14 +239,6 @@ glucose_no_stroke <- stroke_plots %>%
     legend.title = element_text(color = "darkgreen", size = 10, face = "bold"))
 glucose_no_stroke
 
-#plot(stroke$avg_glucose_level, stroke$bmi, 
-     #xlab = "Poziom glukozy", ylab = "BMI",
-     #main = "Wykres zależności pomiędzy poziomem glukozy a BMI",
-     #col = "blue", pch = 16) + theme_minimal()
-
-#ggplot(data = stroke, mapping = aes(x = avg_glucose_level, y = age)) +
-  #geom_point(alpha = 0.5, aes(color = gender))
-
 
 #-------------------------------------------------#
 ###-----------------------------------Correlations
@@ -296,7 +294,7 @@ hyperten_gender <- table(new_dt$gender,new_dt$hypertension)
 print(hyperten_gender)
 
 hyperten_stroke = table(new_dt$hypertension,new_dt$stroke) 
-print(hyperten_stroke)
+
 
 #chi square analysis
 print(chisq.test(stroke_gender))
@@ -329,6 +327,15 @@ backward_model <- stats::step(stroke_regression, direction = "backward")
 #Both Directions Regression
 both_model <- stats::step(stroke_regression, direction = "both")
 
+#Full and Null step Procedure
+model.null <- glm(stroke ~ 1, data = stroke_new, family = binomial())
+model.full <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
+                  data = stroke_new, family = binomial())
+stats::step(model.null, scope = list(upper = model.full), 
+     direction = "both", test = "Chisq", data = stroke_new)
+model.final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, 
+                   data = stroke_new, family = binomial())
+summary(model.final)
 
 #Feature Ranking and Selection Algorithm
 boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
@@ -339,7 +346,8 @@ importances <- importances[importances$decision != "Rejected", c("meanImp", "dec
 importances[order(-importances$meanImp), ]
 
 boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
-boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
+boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). 
+#Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
 # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
 
 
@@ -361,7 +369,7 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke -
 #reflects the actual distribution of the result in the entire study group
 
 #decision tree with ctree function
-model_tree<- ctree(stroke ~ ., train_data)
+model_tree<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
 plot(model_tree)
 class(model_tree)
 
@@ -382,10 +390,8 @@ accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
 #-------------------------------------------------#
 ###-------------Random Forest (with Package Caret)
 #-------------------------------------------------#
-#new data frame with rmd uncsr character variables
-#new_df_1 <-subset(stroke, select = -c(ever_married, work_type, Residence_type, smoking_status))
 
-stroke_bag <- randomForest(stroke ~ ., data = train_data, mtry = 13, 
+stroke_bag <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13, 
                           importance = TRUE, ntrees = 500)
 stroke_bag
 
@@ -399,7 +405,7 @@ abline(0, 1, col = "darkorange", lwd = 2)
 
 #Basic Boosting Tree (gbm function)
 set.seed(1)
-model_gbm <- gbm::gbm(formula=stroke~., data = stroke_new)
+model_gbm <- gbm::gbm(formula=stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data = stroke_new)
 model_gbm
 head(predict(model_gbm, type = "response"))
 tibble::as_tibble(summary(model_gbm))
@@ -410,13 +416,13 @@ stroke_new_st_ch$stroke <- as.character(stroke_new_st_ch$stroke)
 
 #Random Forest (caret pckg)
 set.seed(1)
-model1 <- train(stroke ~ ., data = stroke_new_st_ch, method = 'gbm', verbose = FALSE)
+model1 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = stroke_new_st_ch, method = 'gbm', verbose = FALSE)
 model1
 plot(model1)
 
 #preprocessing
 set.seed(1) 
-model2 <- train(stroke ~ ., data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
+model2 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model2
 plot(model2)
 
@@ -428,7 +434,7 @@ testing  <- stroke[-inTraining,]
 
 #model with training data
 set.seed(1)
-model3 <- train(stroke ~ ., data = training, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
+model3 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = training, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model3
 plot(model3)
 
@@ -441,7 +447,7 @@ predictions = predict(model3, newdata = test.features)
 ctrl <- trainControl(method = "cv",number = 10)
 
 #retrain model
-model4 <- train(stroke ~ ., data = training, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
+model4 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = training, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
 model4
 plot(model4)
 
@@ -454,7 +460,7 @@ predictions = predict(model4, newdata = test.features)
 set.seed(1)
 tuneGrid <- expand.grid(n.trees = c(50, 100),interaction.depth = c(1, 2), shrinkage = 0.1, n.minobsinnode = 10)
 
-model5 <- train(stroke ~ .,data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, tuneGrid = tuneGrid, verbose = FALSE)
+model5 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi,data = stroke_new_st_ch, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, tuneGrid = tuneGrid, verbose = FALSE)
 model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
@@ -491,13 +497,13 @@ xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
 #train the LVQ model
 set.seed(1)
-modelLvq <- train(stroke~., data=stroke_new_st_ch, method="lvq", trControl=control)
+modelLvq <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="lvq", trControl=control)
 #train the GBM model
 set.seed(1)
-modelGbm <- train(stroke~., data=stroke_new_st_ch, method="gbm", trControl=control, verbose=FALSE)
+modelGbm <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="gbm", trControl=control, verbose=FALSE)
 #train the SVM model
 set.seed(1)
-modelSvm <- train(stroke~., data=stroke_new_st_ch, method="svmRadial", trControl=control)
+modelSvm <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="svmRadial", trControl=control)
 # collect resamples
 results <- resamples(list(LVQ=modelLvq, GBM=modelGbm, SVM=modelSvm))
 #summary
@@ -517,34 +523,34 @@ preProcess=c("center", "scale")
 
 # Linear Discriminant Analysis
 set.seed(seed_ml)
-fit.lda <- train(stroke~., data=stroke_new_st_ch, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.lda <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="lda", metric=metric, preProc=c("center", "scale"), trControl=control)
 # Logistic Regression
 set.seed(seed_ml)
-fit.glm <- train(stroke~., data=stroke_new_st_ch, method="glm", metric=metric, trControl=control)
+fit.glm <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="glm", metric=metric, trControl=control)
 # GLMNET
 set.seed(seed_ml)
-fit.glmnet <- train(stroke~., data=stroke_new_st_ch, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.glmnet <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="glmnet", metric=metric, preProc=c("center", "scale"), trControl=control)
 # SVM Radial
 set.seed(seed_ml)
-fit.svmRadial <- train(stroke~., data=stroke_new_st_ch, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
+fit.svmRadial <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="svmRadial", metric=metric, preProc=c("center", "scale"), trControl=control, fit=FALSE)
 # kNN
 set.seed(seed_ml)
-fit.knn <- train(stroke~., data=stroke_new_st_ch, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
+fit.knn <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="knn", metric=metric, preProc=c("center", "scale"), trControl=control)
 # CART
 set.seed(seed_ml)
-fit.cart <- train(stroke~., data=stroke_new_st_ch, method="rpart", metric=metric, trControl=control)
+fit.cart <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="rpart", metric=metric, trControl=control)
 # C5.0
 set.seed(seed_ml)
-fit.c50 <- train(stroke~., data=stroke_new_st_ch, method="C5.0", metric=metric, trControl=control)
+fit.c50 <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="C5.0", metric=metric, trControl=control)
 # Bagged CART
 set.seed(seed_ml)
-fit.treebag <- train(stroke~., data=stroke_new_st_ch, method="treebag", metric=metric, trControl=control)
+fit.treebag <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi~, data=stroke_new_st_ch, method="treebag", metric=metric, trControl=control)
 # Random Forest
 set.seed(seed_ml)
-fit.rf <- train(stroke~., data=stroke_new_st_ch, method="rf", metric=metric, trControl=control)
+fit.rf <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="rf", metric=metric, trControl=control)
 # Stochastic Gradient Boosting (Generalized Boosted Modeling)
 set.seed(seed_ml)
-fit.gbm <- train(stroke~., data=stroke_new_st_ch, method="gbm", metric=metric, trControl=control, verbose = F)
+fit.gbm <- train(stroke~age + avg_glucose_level + hypertension + heart_disease + bmi, data=stroke_new_st_ch, method="gbm", metric=metric, trControl=control, verbose = F)
 
 
 results <- resamples(list(lda=fit.lda, logistic=fit.glm, glmnet=fit.glmnet,
@@ -554,6 +560,17 @@ summary(results)
 bwplot(results)
 dotplot(results)
 #glmnet i gbm seem the best
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -581,6 +598,6 @@ dotplot(results)
   #Articles:
 # Choudhury, M. J. H., Chowdhury, M. T. I., Nayeem, A., & Jahan, W. A. (2015). Modifiable and non-modifiable risk factors of stroke: A review update. Journal of National Institute of Neurosciences Bangladesh, 1(1), 22-26.
 # Hankey, G. J. (2020). Population impact of potentially modifiable risk factors for stroke. Stroke, 51(3), 719-728.
-
+# Wang, Q., Zhang, L., Li, Y., Tang, X., Yao, Y., & Fang, Q. (2022). Development of stroke predictive model in community-dwelling population: A longitudinal cohort study in Southeast China. Frontiers in Aging Neuroscience, 14, 1036215.
   #WHO
 #https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight
