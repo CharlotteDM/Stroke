@@ -254,8 +254,10 @@ glucose_no_stroke
 #correlation: age & hypertension
 cor(stroke$age, stroke$hypertension, use = "complete.obs")
 
+
 #correlation: age & heart disease
 cor(stroke$age, stroke$heart_disease, use = "complete.obs")
+
 
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
@@ -274,14 +276,11 @@ stroke_new$work_type <- case_when(stroke_new$work_type == "children" ~ 0,
 stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,stroke_new$Residence_type == "Rural" ~ 0)
 
 stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
-                                       stroke_new$smoking_status == "smokes" ~ 2,stroke_new$smoking_status == "Unknown" ~ 3)
+stroke_new$smoking_status == "smokes" ~ 2,
+stroke_new$smoking_status == "Unknown" ~ 3)
 
 stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
 stroke_new <- subset(stroke_new, gender != "Other")
-
-#new data frame with patiens over 40 years old for another analysis
-stroke_new_over40 <- stroke_new %>%
-  dplyr::filter(age>40)
 
 #all variables - correlations
 correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
