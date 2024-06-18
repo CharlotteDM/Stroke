@@ -1,5 +1,5 @@
 ---
-title: "A Stroke Prediction Model"
+title: "The Stroke Prediction Model"
 author: "Karolina Dyrla-Mularczyk"
 output: html_document
 
@@ -45,7 +45,7 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-##This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
+#This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
 
 Stroke is a leading cause of death and disability worldwide, with significant public health implications. Some key facts about stroke:
 
@@ -126,6 +126,15 @@ As we could see, the majorty patients have overweight. This corresponds to distu
 
 >"In 2022, 2.5 billion adults (18 years and older) were overweight. Of these, 890 million were living with obesity. In 2022, 43% of adults aged 18 years and over were overweight and 16% were living with obesity.
 
-In the studied group there is 1610 pateients with overweight. Which constitutes __'m'__ of the entire group.
+In the studied group there is 1610 patients with overweight. Which constitutes __'m'__ of the entire group.
+
+The chart below shows the distribution of patients with and without stroke depending on their smoking status.
+
+```{r stroke_smok_stat, echo=FALSE}
+kable(stroke_smok_stat, col.names = c("Patients without stroke", "Patients with stroke"))
+```
 
 
+#Conclusions
+#Future studies
+Future research should take into account more factors related to health behaviors, such as eating habits, physical activity, and alcohol consumption. In the future, clinical indicators as: waist-height ratio, visceral adipose issue should also be considered. The use of blood thinning medications should also be considered. 
