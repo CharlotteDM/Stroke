@@ -167,26 +167,26 @@ m <- round(m, digits = 2)
 m
 percentage <- (1610/5109)*100
 
-#table: Smoking Status & Stroke + chi square test
+#table: Smoking Status & Stroke 
 stroke_smok_stat <- table(stroke_plots$smoking_status,stroke_plots$stroke) 
 colnames(stroke_smok_stat)[1] <- "No Stroke"
 colnames(stroke_smok_stat)[2] <- "Stroke"
 print(stroke_smok_stat)
-print(chisq.test(stroke_smok_stat))
 
-#table: Smoking Status & Hypertension + chi square test
+
+#table: Smoking Status & Hypertension 
 hyperten_smok_stat = table(stroke$smoking_status,stroke$hypertension) 
 colnames(hyperten_smok_stat)[1] <- "No Hypertension"
 colnames(hyperten_smok_stat)[2] <- "Hypertension"
 print(hyperten_smok_stat)
-print(chisq.test(hyperten_smok_stat)) 
 
-#table: Stroke $ Hypertension + chi square test
+
+#table: Stroke $ Hypertension 
 stroke_hypertens <- table(stroke$stroke,stroke$hypertension) 
 colnames(stroke_hypertens)[1] <- "No Hypertension"
 colnames(stroke_hypertens)[2] <- "Hypertension"
 print(stroke_hypertens)
-print(chisq.test(stroke_hypertens)) 
+
 
 
 #ggplot - glucose level and bmi
@@ -279,8 +279,9 @@ stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoke
 stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
 stroke_new <- subset(stroke_new, gender != "Other")
 
-
-
+#new data frame with patiens over 40 years old for another analysis
+stroke_new_over40 <- stroke_new %>%
+  dplyr::filter(age>40)
 
 #all variables - correlations
 correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
