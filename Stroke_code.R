@@ -217,7 +217,7 @@ box_glucose
 
 # plot: Average Glucose Level in the Group of Patients with Stroke
 glucose_and_stroke <- stroke_plots %>%
-  filter (stroke == 1) %>%
+  filter (stroke == "Yes") %>%
   ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = as.factor(gender))) +
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA, alpha = 0.4) + 
@@ -233,7 +233,7 @@ glucose_and_stroke
 
 # plot: Average Glucose Level in the Group of Patients with no Stroke
 glucose_no_stroke <- stroke_plots %>%
-  filter (stroke == 0) %>%
+  filter (stroke == "No") %>%
   ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA,alpha = 0.4) + 
@@ -409,7 +409,7 @@ abline(0, 1, col = "darkorange", lwd = 2)
 rf <- randomForest(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, data=train_data)
 pred_rf <- predict(rf, test_data)
 roc.estimate <- calculate_roc(pred_rf, test_data$stroke)
-plot_journal_roc(single.rocplot)
+#plot_journal_roc(single.rocplot)
 pred <- prediction(pred_rf, test_data$stroke)
 perf <- performance(pred,"tpr","fpr")
 plot(perf,col="darkorange")
