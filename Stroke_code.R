@@ -254,10 +254,8 @@ glucose_no_stroke
 #correlation: age & hypertension
 cor(stroke$age, stroke$hypertension, use = "complete.obs")
 
-
 #correlation: age & heart disease
 cor(stroke$age, stroke$heart_disease, use = "complete.obs")
-
 
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
@@ -273,7 +271,7 @@ stroke_new$work_type <- case_when(stroke_new$work_type == "children" ~ 0,
                                     stroke_new$work_type == "Govt_job" ~ 3,
                                     stroke_new$work_type == "Self-employed" ~ 4)
 
-stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1,stroke_new$Residence_type == "Rural" ~ 0)
+stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1, stroke_new$Residence_type == "Rural" ~ 0)
 
 stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
 stroke_new$smoking_status == "smokes" ~ 2,
@@ -302,8 +300,7 @@ print(stroke_gender)
 hyperten_gender <- table(new_dt$gender,new_dt$hypertension) 
 print(hyperten_gender)
 
-hyperten_stroke = table(new_dt$hypertension,new_dt$stroke) 
-
+hyperten_stroke <- table(new_dt$hypertension,new_dt$stroke) 
 
 #chi square analysis
 print(chisq.test(stroke_gender))
@@ -585,9 +582,6 @@ pred_glm_df <- data.frame(pred = pred_glm, truth = test_data$stroke)
 oc <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_df, tag.healthy = "0")
 summary(oc)
 plot(oc, which = 1)
-
-
-
 
 
 

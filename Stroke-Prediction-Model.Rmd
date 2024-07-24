@@ -137,4 +137,4 @@ kable(stroke_smok_stat, col.names = c("Patients without stroke", "Patients with 
 
 #Conclusions
 #Future studies
-Future research should take into account more factors related to health behaviors, such as eating habits, physical activity, and alcohol consumption. In the future, clinical indicators as: waist-height ratio, visceral adipose issue should also be considered. The use of blood thinning medications should also be considered. 
+Future research should take into account more factors related to health behaviors, such as eating habits, physical activity, and alcohol consumption. In the future, clinical indicators as: waist-height ratio, visceral adipose issue, triglyceride-glucose index should also be considered. The use of blood thinning medications should also be considered. 
