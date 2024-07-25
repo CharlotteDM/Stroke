@@ -168,6 +168,8 @@ m #mean age in the group of overweight patients - 49.5
 percentage_overweight <- (1610/5109)*100 #group of patients with overweight - 31.5% of total numbers of patients
 percentage_obesity <- (1920/5109)*100 #group of patients with obesity (all types) - 37.6%
 
+
+
 #plot: Age and BMI and Stroke Occurrence
 plot_age_bmi <- ggplot(data = stroke_plots, aes(x = age, y = bmi, color = as.factor(stroke))) +
   geom_point(alpha = 0.5) +
@@ -180,6 +182,20 @@ plot_age_bmi <- ggplot(data = stroke_plots, aes(x = age, y = bmi, color = as.fac
     axis.title.y = element_text(color = "navy", size = 13, face = "bold"),
     legend.title = element_text(color = "navy", size = 10, face = "bold"))
 ggplotly(plot_age_bmi) 
+
+
+#plot: Age and Average Glucose Level and Stroke Occurrence
+plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level, color = as.factor(stroke)))+
+  geom_point(alpha = 0.5) +
+  scale_color_brewer(palette="Set2") +
+  stat_smooth(aes(group = 1), method = "lm", formula = y ~ x, se = FALSE) +
+  labs(title="Age & Average Glucose Level and Stroke Occurrence", x="Age", y = "Average Glucose Level", colour = "Stroke") +
+  theme(
+    plot.title = element_text(color = "navy", size = 15, face = "bold"),
+    axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
+    axis.title.y = element_text(color = "navy", size = 13, face = "bold"),
+    legend.title = element_text(color = "navy", size = 10, face = "bold"))
+ggplotly(plot_age_gluc) 
 
 #table: Smoking Status & Stroke 
 stroke_smok_stat <- table(stroke_plots$smoking_status,stroke_plots$stroke) 
