@@ -126,7 +126,7 @@ As we could see, the majorty patients have overweight. This corresponds to distu
 
 >"In 2022, 2.5 billion adults (18 years and older) were overweight. Of these, 890 million were living with obesity. In 2022, 43% of adults aged 18 years and over were overweight and 16% were living with obesity.
 
-In the studied group there is 1610 patients with overweight. Which constitutes __'m'__ of the entire group.
+In the studied group there is 1610 patients with overweight. Which constitutes __'percentage'__ of the entire group.
 
 The chart below shows the distribution of patients with and without stroke depending on their smoking status.
 
