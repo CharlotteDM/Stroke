@@ -42,6 +42,7 @@ library(C50)
 library(plotROC)
 library(ROCR)
 library(OptimalCutpoints)
+library(e1071)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -189,13 +190,19 @@ plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level,
   geom_point(alpha = 0.5) +
   scale_color_brewer(palette="Set2") +
   stat_smooth(aes(group = 1), method = "lm", formula = y ~ x, se = FALSE) +
-  labs(title="Age & Average Glucose Level and Stroke Occurrence", x="Age", y = "Average Glucose Level", colour = "Stroke") +
+  labs(title="Age & Average Glucose Level and Stroke Occurrence", x="Age", y = "Average Glucose Level (mg/dL)", 
+       colour = "Stroke") +
   theme(
-    plot.title = element_text(color = "navy", size = 15, face = "bold"),
-    axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
-    axis.title.y = element_text(color = "navy", size = 13, face = "bold"),
-    legend.title = element_text(color = "navy", size = 10, face = "bold"))
+    plot.title = element_text(color = "darkgreen", size = 15, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(color = "darkgreen", size = 12, face = "bold"),
+    axis.title.y = element_text(color = "darkgreen", size = 12, face = "bold"),
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5),
+    legend.background = element_rect(fill = "white", colour = "darkgreen")) 
 ggplotly(plot_age_gluc) 
+
+Sys.setenv("plotly_username"="K_DM")
+Sys.setenv("plotly_api_key"="IEbtRlBVRCrhy4837aku")
+api_create(plot_age_gluc, filename = "plot_age_gluc")
 
 #table: Smoking Status & Stroke 
 stroke_smok_stat <- table(stroke_plots$smoking_status,stroke_plots$stroke) 
@@ -289,7 +296,9 @@ cor(stroke$age, stroke$heart_disease, use = "complete.obs")
 
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
-
+cor.test(stroke$age, stroke$avg_glucose_leve)
+cor.test(stroke$age, stroke$stroke)
+cor.test(stroke$avg_glucose_level, stroke$stroke)
 
 ###variables as numeric - for future analysis
 stroke_new<-stroke
@@ -419,6 +428,23 @@ accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
 accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
 
 
+###New Way for Decision Tree 
+set.seed(123) 
+trainIndex <- createDataPartition(stroke$stroke, p = 0.7, list = FALSE)
+trainData <- stroke[trainIndex, ]
+testData <- stroke[-trainIndex, ]
+
+model_dt <- rpart(stroke ~ age + avg_glucose_level + hypertension + heart_disease, trainData, method = "class")
+print(model_dt)
+rpart.plot(model_dt)
+
+predictions <- predict(model_dt, newdata = testData, type = "class")
+class(predictions)
+class(testData$stroke)
+confMatrix <- confusionMatrix(table(predictions, testData$stroke))
+print(confMatrix)
+
+
 
 #-------------------------------------------------#
 ###-------------Random Forest (with Package Caret)
@@ -492,6 +518,7 @@ predictions = predict(model3, newdata = test.features)
 
 #Cross Validation - resampling and splitting data many times
 ctrl <- trainControl(method = "cv",number = 10)
+ctrl
 
 #retrain model
 model4 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = training, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
@@ -511,6 +538,10 @@ model5 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease 
 model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
+
+ff
+
+
 
 
 
@@ -632,6 +663,7 @@ plot(oc, which = 1)
   #References:
 #Data:
 #https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+
   #Materials on websites:
 #https://www.geeksforgeeks.org/decision-tree-in-r-programming/
 #https://koalatea.io/r-boosted-tree-regression/
