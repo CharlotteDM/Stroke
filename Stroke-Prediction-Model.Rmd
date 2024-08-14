@@ -45,7 +45,7 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-#This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
+#This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R"#. 
 
 Stroke is a leading cause of death and disability worldwide, with significant public health implications. Some key facts about stroke:
 
@@ -80,39 +80,37 @@ summary(stroke)
 skim(stroke)
 ```
 
-The average age in the study group is  
-__43.3__. 
-The average glucose level in this study group is 
-__106.15__.
+The average age in the study group is  __43.3__. 
+The average glucose level in this study group is __106.15__.
 In the study group, one person marked the gender "other". The record was removed to make the data visualization more readable. Ultimately, 5,109 observations were obtained.
 
 Missing values were found in the "bmi" column. It was decided to enter the average of all BMI measurements in the missing fields and round it to two decimal places.
 
 The charts below show the distribution of demographic variables: gender, place of residence and place of work.
 
-```{r gender=plot, dev='png', out.width="150%", echo=FALSE}
+```{r gender=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(gender)
 ```
 
-```{r residence=plot, dev='png', out.width="150%", echo=FALSE}
+```{r residence=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(residence)
 ```
 
-```{r work=plot, dev='png', out.width="150%", echo=FALSE}
+```{r work=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(work)
 ```
 
 The charts below show the distribution of health related variables: hypertension, heart disease, smoking status.
 
-```{r smoking=plot, dev='png', out.width="150%", echo=FALSE}
+```{r smoking=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(smoking)
 ```
 
-```{r hypertension=plot, dev='png', out.width="150%", echo=FALSE}
+```{r hypertension=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(hypertension)
 ```
 
-```{r heart_disease=plot, dev='png', out.width="150%", echo=FALSE}
+```{r heart_disease=plot, dev='png', out.width="150%", echo=FALSE, warning=FALSE}
 plot(heart_disease)
 ```
 
@@ -126,7 +124,7 @@ As we could see, the majorty patients have overweight. This corresponds to distu
 
 >"In 2022, 2.5 billion adults (18 years and older) were overweight. Of these, 890 million were living with obesity. In 2022, 43% of adults aged 18 years and over were overweight and 16% were living with obesity.
 
-In the studied group there is 1610 patients with overweight. Which constitutes __'percentage'__ of the entire group.
+In the studied group there is 1610 patients with overweight. Which constitutes __'percentage_overweight'__ of the entire group. The group of patients with all types of obesity constitutes __'percentage_obesity'__.
 
 The chart below shows the distribution of patients with and without stroke depending on their smoking status.
 
@@ -147,9 +145,22 @@ kable(stroke_hypertens, row.names = T)
 
 A relationship between age and glucose levels has been observed. The chart below shows this relationship, including stroke patients and non-stroke patients alike.
 
-```{r echo=FALSE, warning=FALSE, plot_age_gluc=plot, dev='png', out.width="150%"}
-plot(plot_age_gluc)
+```{r echo=FALSE, warning=FALSE, plot_age_gluc=plot, dev='png', out.width="100%"}
+ggplotly(plot_age_gluc)
 ```
+The chart shows that high glucose levels are more common in older patients. This chart also differentiates between people with diagnosed stroke (orange dots) and those without stroke (green dots). It is clear that the number of patients with stroke increases with age and with increasing glucose levels. This is also confirmed by the results of the correlations:
+
+- age and glucose: r=0.24, p<0.001; 
+- age and stroke: r=0.25, p<0.001; 
+- stroke and glucose: r=0.12, p<0.001.
+
+There were also differences between the sexes and the average blood sugar levels. This is illustrated in the 2 graphs below, differentiating between stroke and non-stroke patients.
+
+```{r echo=FALSE, warning=FALSE, figures-side, fig.show="hold", out.width="50%, dev='png'"}
+plot(glucose_and_stroke)
+plot(glucose_no_stroke)
+```
+
 
 
 #Conclusions

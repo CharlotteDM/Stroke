@@ -350,10 +350,6 @@ print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
 print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null hypothesis
 
-#mcnemar test
-mcnemar.test(hyperten_stroke) #there is no evidence to reject the null hypothesis
-
-
 
 #-------------------------------------------------#
 ### -------------------------------Predictions Model 
@@ -364,7 +360,7 @@ mcnemar.test(hyperten_stroke) #there is no evidence to reject the null hypothesi
 #-------------------------------------------------#
 
 #simple formula
-stroke_regression <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
+stroke_regression <- glm(stroke ~ ., 
                          data = stroke_new, family = binomial)
 summary(stroke_regression)
 
@@ -378,35 +374,35 @@ both_model <- stats::step(stroke_regression, direction = "both")
 
 #Full and Null step Procedure
 model.null <- glm(stroke ~ 1, data = stroke_new, family = binomial())
-model.full <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, 
+model.full <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, #I selected variables that make the most sense in the context of stroke occurrence based on existing research.
                   data = stroke_new, family = binomial())
 stats::step(model.null, scope = list(upper = model.full), 
      direction = "both", test = "Chisq", data = stroke_new)
-model.final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, 
+model.final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease, 
                    data = stroke_new, family = binomial())
 summary(model.final)
 
 #Feature Ranking and Selection Algorithm
-boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
-rough_fix_mod <- TentativeRoughFix(boruta_output)
-boruta_signif <- getSelectedAttributes(rough_fix_mod)
-importances <- attStats(rough_fix_mod)
-importances <- importances[importances$decision != "Rejected", c("meanImp", "decision")]
-importances[order(-importances$meanImp), ]
-
-boruta_plot <- plot(boruta_output, ces.axis = 0.7, las = 2, xlab = "", main = "Feature importance")
-boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). 
-#Moreover, the graph indicates that the glucose level variable is less important than in previous analyses. 
+#References:
 # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
 
+boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
+rough_fix_mod <- TentativeRoughFix(boruta_output)
+boruta_signif <- getSelectedAttributes(rough_fix_mod) #the most important factors
+importances <- attStats(rough_fix_mod)
+importances <- importances[importances$decision != "Rejected", c("meanImp", "decision")]
+importances[order(-importances$meanImp), ] #the most important factors from the highest to the lowest importance
+
+boruta_plot <- plot(boruta_output, ces.axis = 0.3, las = 2, xlab = "", main = "Feature importance")
+boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). 
+
 
 
 #-------------------------------------------------#
-###-----------------------------------Decision Tree
+###-----------------------------------Splitting Data
 #-------------------------------------------------#
 
-#splitting data
-set.seed(1)
+set.seed(123)
 sample_data = sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
 test_data <- subset(stroke_new, sample_data == FALSE)
@@ -415,6 +411,12 @@ dim(train_data)
 
 prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - 
 #reflects the actual distribution of the result in the entire study group
+
+
+#-------------------------------------------------#
+###-----------------------------------Decision Tree
+#-------------------------------------------------#
+
 
 #decision tree with ctree function
 model_tree<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
@@ -455,13 +457,13 @@ print(confMatrix)
 ###-------------Random Forest (with Package Caret)
 #-------------------------------------------------#
 
-model_ranfor <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease, data = trainData, importance = TRUE)
-print(model_ranfor)
-predictions_rf <- predict(model_ranfor, newdata = testData, type = "class")
-class(predictions_rf)
-class(testData$stroke)
-confMatrix_rf <- confusionMatrix(table(predictions_rf, testData$stroke))
-print(confMatrix_rf)
+#model_ranfor <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease, data = trainData, importance = TRUE)
+#print(model_ranfor)
+#predictions_rf <- predict(model_ranfor, newdata = testData, type = "class")
+#class(predictions_rf)
+#class(testData$stroke)
+#confMatrix_rf <- confusionMatrix(table(predictions_rf, testData$stroke))
+#print(confMatrix_rf)
 
 
 
@@ -558,7 +560,7 @@ model5
 model5$results %>% arrange(Accuracy)
 plot(model5)
 
-ff
+
 
 
 
