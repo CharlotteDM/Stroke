@@ -133,7 +133,17 @@ The chart below shows the distribution of patients with and without stroke depen
 ```{r stroke_smok_stat, echo=FALSE}
 kable(stroke_smok_stat, col.names = c("Patients without stroke", "Patients with stroke"))
 ```
+The chart below shows the distribution of patients with and without stroke depending on occurence of hypertension.
 
+```{r hyperten_smok_stat, echo=FALSE}
+kable(hyperten_smok_stat, col.names = c("Patients without stroke", "Patients with stroke"))
+```
+
+The chart below shows the distribution of patients with and without stroke depending on occurence of hypertension.
+
+```{r stroke_hypertens, echo=FALSE}
+kable(stroke_hypertens, row.names = T)
+```
 
 #Conclusions
 #Future studies

@@ -200,9 +200,10 @@ plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level,
     legend.background = element_rect(fill = "white", colour = "darkgreen")) 
 ggplotly(plot_age_gluc) 
 
-Sys.setenv("plotly_username"="K_DM")
-Sys.setenv("plotly_api_key"="IEbtRlBVRCrhy4837aku")
-api_create(plot_age_gluc, filename = "plot_age_gluc")
+###---Saving plot on plotly platform---###
+#Sys.setenv("plotly_username"="K_DM")
+#Sys.setenv("plotly_api_key"="IEbtRlBVRCrhy4837aku")
+#api_create(plot_age_gluc, filename = "plot_age_gluc")
 
 #table: Smoking Status & Stroke 
 stroke_smok_stat <- table(stroke_plots$smoking_status,stroke_plots$stroke) 
@@ -222,6 +223,8 @@ print(hyperten_smok_stat)
 stroke_hypertens <- table(stroke$stroke,stroke$hypertension) 
 colnames(stroke_hypertens)[1] <- "No Hypertension"
 colnames(stroke_hypertens)[2] <- "Hypertension"
+rownames(stroke_hypertens)[1] <- "No Stroke"
+rownames(stroke_hypertens)[2] <- "Stroke"
 print(stroke_hypertens)
 
 
@@ -446,9 +449,24 @@ print(confMatrix)
 
 
 
+
 #-------------------------------------------------#
 ###-------------Random Forest (with Package Caret)
 #-------------------------------------------------#
+
+model_ranfor <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease, data = trainData, importance = TRUE)
+print(model_ranfor)
+predictions_rf <- predict(model_ranfor, newdata = testData, type = "class")
+class(predictions_rf)
+class(testData$stroke)
+confMatrix_rf <- confusionMatrix(table(predictions_rf, testData$stroke))
+print(confMatrix_rf)
+
+
+
+
+
+
 stroke_bag <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13, 
                           importance = TRUE, ntrees = 500)
 stroke_bag
