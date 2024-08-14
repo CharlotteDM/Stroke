@@ -402,6 +402,7 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 ###-----------------------------------Splitting Data
 #-------------------------------------------------#
 
+
 set.seed(123)
 sample_data = sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
@@ -413,69 +414,59 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke -
 #reflects the actual distribution of the result in the entire study group
 
 
+
+
 #-------------------------------------------------#
 ###-----------------------------------Decision Tree
 #-------------------------------------------------#
 
 
-#decision tree with ctree function
-model_tree<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
+#Decision Tree with ctree function
+settings <- ctree_control(mincriterion = 0.5, testtype = "Teststatistic")
+model_tree<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data, controls = settings)
 plot(model_tree)
-class(model_tree)
 
-#prediction for decision tree
-predict_model <- predict(model_tree, test_data) 
-pred_table <- table(test_data$stroke, predict_model) 
+class(train_data$stroke)
+class(test_data$stroke)
+train_data$stroke=as.factor(train_data$stroke)
+test_data$stroke=as.factor(test_data$stroke)
+
+model_tree2<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
+plot(model_tree2) #simpler model
+
+#Prediction for Decision Tree
+predict_dtree <- stats::predict(model_tree2, test_data) 
+pred_table <- table(prediction = predict_dtree, real_data = test_data$stroke) 
 pred_table
 dim(pred_table)
 
-#accuracy
+#Accuracy
 accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
-accuracy_decisiontree #Accuracy of the Decision Tree Model is 0.41.
+accuracy_decisiontree #Accuracy of the Decision Tree Model is .
+print(paste('Accuracy for test is found to be', accuracy_decisiontree))
 
+#Confusion Matrix
+class(predict_model)
+class(test_data$stroke)
+levels(predict_model)
+levels(test_data$stroke)
 
-###New Way for Decision Tree 
-set.seed(123) 
-trainIndex <- createDataPartition(stroke$stroke, p = 0.7, list = FALSE)
-trainData <- stroke[trainIndex, ]
-testData <- stroke[-trainIndex, ]
-
-model_dt <- rpart(stroke ~ age + avg_glucose_level + hypertension + heart_disease, trainData, method = "class")
-print(model_dt)
-rpart.plot(model_dt)
-
-predictions <- predict(model_dt, newdata = testData, type = "class")
-class(predictions)
-class(testData$stroke)
-confMatrix <- confusionMatrix(table(predictions, testData$stroke))
+confMatrix <- confusionMatrix(predict_dtree, test_data$stroke)
 print(confMatrix)
-
-
+sensitivity <- confMatrix$byClass["Sensitivity"]
+specificity <- confMatrix$byClass["Specificity"]
+#I have to balance data, because sensitivity = 1 and specifity = 0
 
 
 #-------------------------------------------------#
 ###-------------Random Forest (with Package Caret)
 #-------------------------------------------------#
 
-#model_ranfor <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease, data = trainData, importance = TRUE)
-#print(model_ranfor)
-#predictions_rf <- predict(model_ranfor, newdata = testData, type = "class")
-#class(predictions_rf)
-#class(testData$stroke)
-#confMatrix_rf <- confusionMatrix(table(predictions_rf, testData$stroke))
-#print(confMatrix_rf)
+stroke_randomforest <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13,importance = TRUE, ntrees = 500)
+print(stroke_randomforest)
 
-
-
-
-
-
-stroke_bag <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13, 
-                          importance = TRUE, ntrees = 500)
-stroke_bag
-
-stroke_bag_tst_pred <- predict(stroke_bag, newdata = test_data)
-plot(stroke_bag_tst_pred,test_data$stroke,
+stroke_rf_tst_pred <- predict(stroke_randomforest, newdata = test_data)
+plot(stroke_rf_tst_pred,test_data$stroke,
      xlab = "Predicted", ylab = "Actual",
      main = "Predicted vs Actual: Bagged Model, Test Data",
      col = "dodgerblue", pch = 20)
