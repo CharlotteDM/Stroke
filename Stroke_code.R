@@ -258,7 +258,7 @@ box_glucose
 # plot: Average Glucose Level in the Group of Patients with Stroke
 glucose_and_stroke <- stroke_plots %>%
   filter (stroke == "Yes") %>%
-  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = as.factor(gender))) +
+  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = gender)) +
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA, alpha = 0.4) + 
   ggdist::stat_dots(side = "left",justification = 1.1,binwidth = 0.25) +
@@ -267,14 +267,15 @@ glucose_and_stroke <- stroke_plots %>%
     plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
     axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
     axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold"),
-    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"))
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"),
+    )
 glucose_and_stroke
 
 
 # plot: Average Glucose Level in the Group of Patients with no Stroke
 glucose_no_stroke <- stroke_plots %>%
   filter (stroke == "No") %>%
-  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = factor(gender))) +
+  ggplot(aes(x = factor(gender), y = avg_glucose_level, fill = gender)) +
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA,alpha = 0.4) + 
   ggdist::stat_dots(side = "left", justification = 1.1, binwidth = 0.25)+
