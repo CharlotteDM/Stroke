@@ -43,6 +43,7 @@ library(plotROC)
 library(ROCR)
 library(OptimalCutpoints)
 library(e1071)
+library(ROSE)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -450,12 +451,14 @@ class(predict_model)
 class(test_data$stroke)
 levels(predict_model)
 levels(test_data$stroke)
-
 confMatrix <- confusionMatrix(predict_dtree, test_data$stroke)
 print(confMatrix)
 sensitivity <- confMatrix$byClass["Sensitivity"]
 specificity <- confMatrix$byClass["Specificity"]
-#I have to balance data, because sensitivity = 1 and specifity = 0
+#The data is unbalanced - there are few stroke patients compared to patients without stroke. So sensitivity = 1 and specificity = 0. 
+#The sensitivity is high because the model correctly classifies most examples from the dominant class, but the specificity is 0 because the model classifies all examples as positive, ignoring the negative class.
+
+#undersample with package ROSE
 
 
 #-------------------------------------------------#
