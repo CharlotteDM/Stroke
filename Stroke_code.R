@@ -229,7 +229,6 @@ rownames(stroke_hypertens)[2] <- "Stroke"
 print(stroke_hypertens)
 
 
-
 #ggplot - glucose level and bmi
 plot_gluc_bmi <- ggplot(data = stroke_plots, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
   geom_point(alpha = 0.5) +
@@ -404,17 +403,11 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 #-------------------------------------------------#
 
 
-set.seed(123)
-sample_data = sample.split(stroke_new, SplitRatio = 0.8)
+#set.seed(123)
+sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
 test_data <- subset(stroke_new, sample_data == FALSE)
-dim(test_data)
-dim(train_data)
-
-prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - 
-#reflects the actual distribution of the result in the entire study group
-
-
+prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows big unbalance
 
 
 #-------------------------------------------------#
@@ -422,22 +415,14 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke -
 #-------------------------------------------------#
 
 
-#Decision Tree with ctree function
-settings <- ctree_control(mincriterion = 0.5, testtype = "Teststatistic")
-model_tree<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data, controls = settings)
-plot(model_tree)
-
-class(train_data$stroke)
-class(test_data$stroke)
-train_data$stroke=as.factor(train_data$stroke)
-test_data$stroke=as.factor(test_data$stroke)
+#________________Decision Tree with ctree function
 
 model_tree2<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
 plot(model_tree2) #simpler model
 
 #Prediction for Decision Tree
-predict_dtree <- stats::predict(model_tree2, test_data) 
-pred_table <- table(prediction = predict_dtree, real_data = test_data$stroke) 
+predict_dtree <- predict(model_tree2, test_data,type="response" ) 
+pred_table <- table(predict_dtree, test_data$stroke) 
 pred_table
 dim(pred_table)
 
@@ -446,11 +431,15 @@ accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table)
 accuracy_decisiontree #Accuracy of the Decision Tree Model is .
 print(paste('Accuracy for test is found to be', accuracy_decisiontree))
 
+
 #Confusion Matrix
-class(predict_model)
+class(predict_dtree)
 class(test_data$stroke)
-levels(predict_model)
+levels(predict_dtree)
 levels(test_data$stroke)
+test_data$stroke <- as.factor(test_data$stroke)
+predict_dtree <- as.factor(predict_dtree)
+
 confMatrix <- confusionMatrix(predict_dtree, test_data$stroke)
 print(confMatrix)
 sensitivity <- confMatrix$byClass["Sensitivity"]
@@ -458,7 +447,59 @@ specificity <- confMatrix$byClass["Specificity"]
 #The data is unbalanced - there are few stroke patients compared to patients without stroke. So sensitivity = 1 and specificity = 0. 
 #The sensitivity is high because the model correctly classifies most examples from the dominant class, but the specificity is 0 because the model classifies all examples as positive, ignoring the negative class.
 
-#undersample with package ROSE
+
+#data balancing with package ROSE
+table(stroke_new$stroke)
+rose_data <- ROSE(stroke ~ ., data = stroke_new, seed = 123)$data
+table(rose_data$stroke)
+
+set.seed(123)
+sample_data <- sample.split(rose_data, SplitRatio = 0.8)
+train_data <- subset(rose_data, sample_data == TRUE)
+test_data <- subset(rose_data, sample_data == FALSE)
+prop.table(table(train_data$stroke)) #data are more balanced!
+
+
+
+#-------------------------------------------------#
+###-----------------------------------Decision Tree
+#-------------------------------------------------#
+
+
+# _________Decision Tree with rpart function 
+
+model_rpart <- rpart(stroke ~ ., data = train_data, method = "class")
+model_rpart
+rpart.plot(model_rpart)
+preds <- predict(model_rpart, newdata = test_data, type = "class")
+preds
+
+pred_table <- table(prediction = preds, real_data = test_data$stroke) 
+pred_table
+
+#Confusion Matrix
+class(preds)
+class(test_data$stroke)
+levels(preds)
+levels(test_data$stroke)
+test_data$stroke <- as.factor(test_data$stroke)
+preds<- as.factor(preds)
+confMatrix <- confusionMatrix(test_data$stroke, preds)
+print(confMatrix)
+
+#Params
+accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
+accuracy_decisiontree #Accuracy of the Decision Tree Model is .
+print(paste('Accuracy for test is found to be', accuracy_decisiontree))
+sensitivity <- confMatrix$byClass["Sensitivity"]
+specificity <- confMatrix$byClass["Specificity"]
+print(paste('Sensitivity for test is found to be', sensitivity, "and specificity is", specificity))
+
+
+
+
+
+
 
 
 #-------------------------------------------------#
@@ -603,6 +644,8 @@ summary(results)
 bwplot(results)
 #dotplot of results
 dotplot(results) #gbm & glmnet look the best
+
+
 
 #-------------------------------------------------#
 ###Evaluation (https://machinelearningmastery.com/evaluate-machine-learning-algorithms-with-r/)
