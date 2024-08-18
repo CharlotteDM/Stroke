@@ -44,6 +44,7 @@ library(ROCR)
 library(OptimalCutpoints)
 library(e1071)
 library(ROSE)
+library(class)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
@@ -404,10 +405,10 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 
 
 #set.seed(123)
-sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
-train_data <- subset(stroke_new, sample_data == TRUE)
-test_data <- subset(stroke_new, sample_data == FALSE)
-prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows big unbalance
+#sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
+#train_data <- subset(stroke_new, sample_data == TRUE)
+#test_data <- subset(stroke_new, sample_data == FALSE)
+#prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows big unbalance
 
 
 #-------------------------------------------------#
@@ -417,33 +418,33 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - refle
 
 #________________Decision Tree with ctree function
 
-model_tree2<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
-plot(model_tree2) #simpler model
+#model_tree2<- ctree(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, train_data)
+#plot(model_tree2) #simpler model
 
 #Prediction for Decision Tree
-predict_dtree <- predict(model_tree2, test_data,type="response" ) 
-pred_table <- table(predict_dtree, test_data$stroke) 
-pred_table
-dim(pred_table)
+#predict_dtree <- predict(model_tree2, test_data,type="response" ) 
+#pred_table <- table(predict_dtree, test_data$stroke) 
+#pred_table
+#dim(pred_table)
 
 #Accuracy
-accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
-accuracy_decisiontree #Accuracy of the Decision Tree Model is .
-print(paste('Accuracy for test is found to be', accuracy_decisiontree))
+#accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
+#accuracy_decisiontree #Accuracy of the Decision Tree Model is .
+#print(paste('Accuracy for test is found to be', accuracy_decisiontree))
 
 
 #Confusion Matrix
-class(predict_dtree)
-class(test_data$stroke)
-levels(predict_dtree)
-levels(test_data$stroke)
-test_data$stroke <- as.factor(test_data$stroke)
-predict_dtree <- as.factor(predict_dtree)
+#class(predict_dtree)
+#class(test_data$stroke)
+#levels(predict_dtree)
+#levels(test_data$stroke)
+#test_data$stroke <- as.factor(test_data$stroke)
+#predict_dtree <- as.factor(predict_dtree)
 
-confMatrix <- confusionMatrix(predict_dtree, test_data$stroke)
-print(confMatrix)
-sensitivity <- confMatrix$byClass["Sensitivity"]
-specificity <- confMatrix$byClass["Specificity"]
+#confMatrix <- confusionMatrix(predict_dtree, test_data$stroke)
+#print(confMatrix)
+#sensitivity <- confMatrix$byClass["Sensitivity"]
+#specificity <- confMatrix$byClass["Specificity"]
 #The data is unbalanced - there are few stroke patients compared to patients without stroke. So sensitivity = 1 and specificity = 0. 
 #The sensitivity is high because the model correctly classifies most examples from the dominant class, but the specificity is 0 because the model classifies all examples as positive, ignoring the negative class.
 
@@ -490,10 +491,33 @@ print(confMatrix)
 #Params
 accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
 accuracy_decisiontree #Accuracy of the Decision Tree Model is .
-print(paste('Accuracy for test is found to be', accuracy_decisiontree))
+print(paste('Accuracy for test is found to be', round(accuracy_decisiontree, 2)))
 sensitivity <- confMatrix$byClass["Sensitivity"]
 specificity <- confMatrix$byClass["Specificity"]
-print(paste('Sensitivity for test is found to be', sensitivity, "and specificity is", specificity))
+print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
+
+
+# _________KNN model
+#standarization of data 
+train_data_scaled <- scale(train_data[, -ncol(train_data)])  
+test_data_scaled <- scale(test_data[, -ncol(test_data)], center = attr(train_data_scaled, "scaled:center"), scale = attr(train_data_scaled, "scaled:scale"))
+
+train_control <- trainControl(method = "cv", number = 10)
+knn_fit <- train(stroke ~ ., data = train_data, method = "knn", trControl = train_control, tuneLength = 10)
+print(knn_fit)
+#Training of data
+k_optimal <- knn_fit$bestTune$k
+knn_model <- knn(train = train_data_scaled, test = test_data_scaled, cl = train_data$stroke, k = k_optimal)
+#evaluation of model
+#confusion matrix
+confusion_matrix <- table(test_data$stroke, knn_model)
+#accuracy
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+print(confusion_matrix)
+print(paste("Accuracy:", round(accuracy, 2)))
+#other params
+confusion <- confusionMatrix(knn_model, as.factor(test_data$stroke))
+print(confusion)
 
 
 
@@ -509,19 +533,15 @@ print(paste('Sensitivity for test is found to be', sensitivity, "and specificity
 stroke_randomforest <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13,importance = TRUE, ntrees = 500)
 print(stroke_randomforest)
 
-stroke_rf_tst_pred <- predict(stroke_randomforest, newdata = test_data)
-plot(stroke_rf_tst_pred,test_data$stroke,
-     xlab = "Predicted", ylab = "Actual",
-     main = "Predicted vs Actual: Bagged Model, Test Data",
-     col = "dodgerblue", pch = 20)
-grid()
-abline(0, 1, col = "darkorange", lwd = 2)
+#stroke_rf_tst_pred <- predict(stroke_randomforest, newdata = test_data)
+#plot(stroke_rf_tst_pred,test_data$stroke,xlab = "Predicted", ylab = "Actual",main = "Predicted vs Actual: Bagged Model, Test Data",col = "dodgerblue", pch = 20)
+#grid()
+#abline(0, 1, col = "darkorange", lwd = 2)
 
 #Reciving Operating Characteristics
 rf <- randomForest(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, data=train_data)
 pred_rf <- predict(rf, test_data)
 roc.estimate <- calculate_roc(pred_rf, test_data$stroke)
-#plot_journal_roc(single.rocplot)
 pred <- prediction(pred_rf, test_data$stroke)
 perf <- performance(pred,"tpr","fpr")
 plot(perf,col="darkorange")
@@ -540,8 +560,8 @@ head(predict(model_gbm, type = "response"))
 tibble::as_tibble(summary(model_gbm))
 
 #Dependent Variable as character for Random Forest Analysis and making new data frame
-stroke_new_st_ch <- stroke_new
-stroke_new_st_ch$stroke <- as.character(stroke_new_st_ch$stroke)
+#stroke_new_st_ch <- stroke_new
+#stroke_new_st_ch$stroke <- as.character(stroke_new_st_ch$stroke)
 
 #Random Forest (caret pckg)
 set.seed(1)
@@ -556,20 +576,20 @@ model2
 plot(model2)
 
 #splitting data
-set.seed(1)
-inTraining <- createDataPartition(stroke_new_st_ch$stroke, p = .80, list = FALSE)
-training <- stroke[inTraining,]
-testing  <- stroke[-inTraining,]
+#set.seed(1)
+#inTraining <- createDataPartition(stroke_new_st_ch$stroke, p = .80, list = FALSE)
+#training <- stroke[inTraining,]
+#testing  <- stroke[-inTraining,]
 
 #model with training data
 set.seed(1)
-model3 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = training, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
+model3 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, method = 'gbm', preProcess = c("center", "scale"), verbose = FALSE)
 model3
 plot(model3)
 
 #prediction for test data set
-test.features = subset(testing, select=-c(stroke))
-test.target = subset(testing, select=stroke)[,1]
+test.features = subset(test_data, select=-c(stroke))
+test.target = subset(test_data, select=stroke)[,1]
 predictions = predict(model3, newdata = test.features)
 
 #Cross Validation - resampling and splitting data many times
@@ -577,13 +597,13 @@ ctrl <- trainControl(method = "cv",number = 10)
 ctrl
 
 #retrain model
-model4 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = training, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
+model4 <- train(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, method = 'gbm', preProcess = c("center", "scale"), trControl = ctrl, verbose = FALSE)
 model4
 plot(model4)
 
 #next prediction for test data set
-test.features = subset(testing, select=-c(stroke))
-test.target = subset(testing, select=stroke)[,1]
+test.features = subset(test_data, select=-c(stroke))
+test.target = subset(test_data, select=stroke)[,1]
 predictions = predict(model4, newdata = test.features)
 
 #tuning parameters
