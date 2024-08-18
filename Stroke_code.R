@@ -386,14 +386,12 @@ summary(model.final)
 #Feature Ranking and Selection Algorithm
 #References:
 # https://stats.stackexchange.com/questions/231623/features-selection-why-does-boruta-confirms-all-my-features-as-important
-
 boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
 boruta_signif <- getSelectedAttributes(rough_fix_mod) #the most important factors
 importances <- attStats(rough_fix_mod)
 importances <- importances[importances$decision != "Rejected", c("meanImp", "decision")]
 importances[order(-importances$meanImp), ] #the most important factors from the highest to the lowest importance
-
 boruta_plot <- plot(boruta_output, ces.axis = 0.3, las = 2, xlab = "", main = "Feature importance")
 boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). 
 
@@ -402,13 +400,11 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 #-------------------------------------------------#
 ###-----------------------------------Splitting Data
 #-------------------------------------------------#
-
-
-#set.seed(123)
-#sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
-#train_data <- subset(stroke_new, sample_data == TRUE)
-#test_data <- subset(stroke_new, sample_data == FALSE)
-#prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows big unbalance
+set.seed(123)
+sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
+train_data <- subset(stroke_new, sample_data == TRUE)
+test_data <- subset(stroke_new, sample_data == FALSE)
+prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows also the huge unbalance
 
 
 #-------------------------------------------------#
@@ -449,7 +445,9 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 #The sensitivity is high because the model correctly classifies most examples from the dominant class, but the specificity is 0 because the model classifies all examples as positive, ignoring the negative class.
 
 
-#data balancing with package ROSE
+#-------------------------------------------------#
+###-----Data Balancing with Package ROSE--------###
+#-------------------------------------------------#
 table(stroke_new$stroke)
 rose_data <- ROSE(stroke ~ ., data = stroke_new, seed = 123)$data
 table(rose_data$stroke)
@@ -463,11 +461,8 @@ prop.table(table(train_data$stroke)) #data are more balanced!
 
 
 #-------------------------------------------------#
-###-----------------------------------Decision Tree
+###-------------Decision-Tree-------------------###
 #-------------------------------------------------#
-
-
-# _________Decision Tree with rpart function 
 
 model_rpart <- rpart(stroke ~ ., data = train_data, method = "class")
 model_rpart
@@ -496,9 +491,11 @@ sensitivity <- confMatrix$byClass["Sensitivity"]
 specificity <- confMatrix$byClass["Specificity"]
 print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
 
+#-------------------------------------------------#
+###-------------KNN Model-----------------------###
+#-------------------------------------------------#
 
-# _________KNN model
-#standarization of data 
+#standardization of data 
 train_data_scaled <- scale(train_data[, -ncol(train_data)])  
 test_data_scaled <- scale(test_data[, -ncol(test_data)], center = attr(train_data_scaled, "scaled:center"), scale = attr(train_data_scaled, "scaled:scale"))
 
@@ -520,6 +517,30 @@ confusion <- confusionMatrix(knn_model, as.factor(test_data$stroke))
 print(confusion)
 
 
+#-------------------------------------------------#
+###-------------SVM-Model-----------------------###
+#-------------------------------------------------#
+#Data Scaling
+train_scaled_svm <- scale(train_data[, -5])
+test_scaled_svm <- scale(test_data[, -5], center = attr(train_scaled_svm, "scaled:center"), scale = attr(train_scaled_svm, "scaled:scale"))
+
+#Adding Class Labels
+train_scaled_svm <- data.frame(train_scaled_svm, stroke = train_data$stroke)
+test_scaled_svm <- data.frame(test_scaled_svm, stroke = test_data$stroke)
+test_scaled_svm <- as.data.frame(test_scaled_svm)
+class(test_scaled_svm)
+
+#Model SVM Building
+svm_model <- svm(stroke ~ ., data = train_scaled_svm, kernel = "radial", cost = 1, gamma = 0.1)
+
+#Predictions
+predictions_svm <- predict(svm_model, newdata = test_scaled_svm[, names(test_scaled_svm) != "Species"])
+
+#Evaluation of Model
+conf_matrix_svm <- confusionMatrix(predictions_svm, test_scaled_svm$stroke)
+class(test_scaled_svm$stroke)
+# Wyświetlanie macierzy pomyłek i wyników
+print(conf_matrix)
 
 
 
