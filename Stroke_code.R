@@ -518,28 +518,9 @@ print(confusion)
 
 
 #-------------------------------------------------#
-###-------------SVM-Model-----------------------###
+###-------------Random-Forest-------------------###
 #-------------------------------------------------#
 
-
-
-
-
-
-
-#-------------------------------------------------#
-###-------------Random Forest (with Package Caret)
-#-------------------------------------------------#
-
-stroke_randomforest <- randomForest(stroke ~ age + avg_glucose_level + hypertension + heart_disease + bmi, data = train_data, mtry = 13,importance = TRUE, ntrees = 500)
-print(stroke_randomforest)
-
-#stroke_rf_tst_pred <- predict(stroke_randomforest, newdata = test_data)
-#plot(stroke_rf_tst_pred,test_data$stroke,xlab = "Predicted", ylab = "Actual",main = "Predicted vs Actual: Bagged Model, Test Data",col = "dodgerblue", pch = 20)
-#grid()
-#abline(0, 1, col = "darkorange", lwd = 2)
-
-#Reciving Operating Characteristics
 rf <- randomForest(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, data=train_data)
 pred_rf <- predict(rf, test_data)
 roc.estimate <- calculate_roc(pred_rf, test_data$stroke)
@@ -548,10 +529,18 @@ perf <- performance(pred,"tpr","fpr")
 plot(perf,col="darkorange")
 abline(0,1)
 
-pref_df <- data.frame(pred = pred_rf, truth = test_data$stroke)
-oc <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_df, tag.healthy = "0")
-summary(oc)
-plot(oc, which = 1)
+#ROC Curve for Random Forest Model
+pref_rf_df <- data.frame(pred = pred_rf, truth = test_data$stroke)
+opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_rf_df, tag.healthy = "0")
+summary(opt_cut)
+plot(opt_cut, which = 1)
+#AUC = 0.912 - model is really good, TPR = 0.849, FPR = 0.181
+
+
+
+
+
+
 
 #Basic Boosting Tree (gbm function)
 set.seed(1)
