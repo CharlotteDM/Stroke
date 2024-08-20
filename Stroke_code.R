@@ -520,27 +520,7 @@ print(confusion)
 #-------------------------------------------------#
 ###-------------SVM-Model-----------------------###
 #-------------------------------------------------#
-#Data Scaling
-train_scaled_svm <- scale(train_data[, -5])
-test_scaled_svm <- scale(test_data[, -5], center = attr(train_scaled_svm, "scaled:center"), scale = attr(train_scaled_svm, "scaled:scale"))
 
-#Adding Class Labels
-train_scaled_svm <- data.frame(train_scaled_svm, stroke = train_data$stroke)
-test_scaled_svm <- data.frame(test_scaled_svm, stroke = test_data$stroke)
-test_scaled_svm <- as.data.frame(test_scaled_svm)
-class(test_scaled_svm)
-
-#Model SVM Building
-svm_model <- svm(stroke ~ ., data = train_scaled_svm, kernel = "radial", cost = 1, gamma = 0.1)
-
-#Predictions
-predictions_svm <- predict(svm_model, newdata = test_scaled_svm[, names(test_scaled_svm) != "Species"])
-
-#Evaluation of Model
-conf_matrix_svm <- confusionMatrix(predictions_svm, test_scaled_svm$stroke)
-class(test_scaled_svm$stroke)
-# Wyświetlanie macierzy pomyłek i wyników
-print(conf_matrix)
 
 
 
