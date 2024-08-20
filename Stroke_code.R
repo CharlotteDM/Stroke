@@ -202,10 +202,6 @@ plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level,
     legend.background = element_rect(fill = "white", colour = "darkgreen")) 
 ggplotly(plot_age_gluc) 
 
-###---Saving plot on plotly platform---###
-#Sys.setenv("plotly_username"="K_DM")
-#Sys.setenv("plotly_api_key"="IEbtRlBVRCrhy4837aku")
-#api_create(plot_age_gluc, filename = "plot_age_gluc")
 
 #table: Smoking Status & Stroke 
 stroke_smok_stat <- table(stroke_plots$smoking_status,stroke_plots$stroke) 
@@ -324,9 +320,7 @@ stroke_new$smoking_status == "Unknown" ~ 3)
 stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
 stroke_new <- subset(stroke_new, gender != "Other")
 
-#all variables - correlations
-correlations_all <- cor(stroke_new, method = "pearson", use = "complete.obs")
-corrplot(correlations_all, method="circle")
+stroke_new$stroke <- as.factor(stroke_new$stroke)
 
 
 
@@ -361,8 +355,7 @@ print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null h
 #-------------------------------------------------#
 
 #simple formula
-stroke_regression <- glm(stroke ~ ., 
-                         data = stroke_new, family = binomial)
+stroke_regression <- glm(stroke ~ ., data = stroke_new, family = binomial)
 summary(stroke_regression)
 
 #Coefficient Plot
@@ -482,21 +475,27 @@ print(confusion)
 #-------------------------------------------------#
 ###-------------Random-Forest-------------------###
 #-------------------------------------------------#
+#model
+set.seed(123)
+stroke_rf <- randomForest(stroke ~ ., data=train_data, proximity = TRUE)
+print(stroke_rf) #out of bag error is 17.17%, the train data model accuracy is 82.83%, ntree = 500, mtry = 3
+plot(stroke_rf)
 
-rf <- randomForest(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi, data=train_data)
-pred_rf <- predict(rf, test_data)
-roc.estimate <- calculate_roc(pred_rf, test_data$stroke)
-pred <- prediction(pred_rf, test_data$stroke)
-perf <- performance(pred,"tpr","fpr")
-plot(perf,col="darkorange")
-abline(0,1)
+#prediction on the test data
+pred_rf <- predict(stroke_rf, test_data)
+pred_rf <- as.factor(pred_rf)
+test_data$stroke <- as.factor(test_data$stroke)
+
+#confusion matrix
+confusionMatrix(pred_rf, test_data$stroke) #Accuracy = 0.83, Sensitivity = 0.81, Specificity = 0.86
 
 #ROC Curve for Random Forest Model
-pref_rf_df <- data.frame(pred = pred_rf, truth = test_data$stroke)
+pred_rf_prob <- predict(stroke_rf, newdata = test_data, type = "prob")[, 2]
+pref_rf_df <- data.frame(pred = pred_rf_prob, truth = test_data$stroke)
 opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_rf_df, tag.healthy = "0")
 summary(opt_cut)
 plot(opt_cut, which = 1)
-#AUC = 0.912 - model is really good, TPR = 0.849, FPR = 0.181
+#AUC = 0.917 - model is really good, TPR = 0.831, FPR = 0.154
 
 
 
