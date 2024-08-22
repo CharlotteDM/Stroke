@@ -505,34 +505,6 @@ plot(opt_cut, which = 1)
 
 
 
-#-------------------------------------------------#
-#---XGBOOST (method from publication: Jared P. Lander "R dla każdego")
-#-------------------------------------------------#
-stroke_formula <- stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level + bmi - 1
-strokeX <- build.x(stroke_formula, data = stroke_new_st_ch, contrast = F)          
-strokeY <- build.y(stroke_formula, data = stroke_new_st_ch)
-#strokeY <- as.integer(relevel(strokeY, ref = 1)) - 1
-class(strokeY)
-strokeBoost <- xgboost(data = strokeX, label = strokeY, max.depth = 3, eta = 3,
-                       nrounds = 20, objective = "binary:logistic")
-xgb.plot.multi.trees(strokeBoost, feature_names = colnames(strokeX))
-xgb.plot.importance(xgb.importance(strokeBoost, feature_names = colnames(strokeX)))
-#the most important features - bmi, glucose level and age
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   #References:
 #Data:
 #https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
