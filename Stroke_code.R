@@ -1,22 +1,22 @@
-#-------------------------------------------------#
-#########---------------Project "Stroke Prediction"
-#-------------------------------------------------#
+#---------------------------------------------------------------------#
+#########-------------Project "Stroke Prediction"---------------------#
+#---------------------------------------------------------------------#
 
 
 library(dplyr)
 library(skimr)
 library(DataExplorer)
-library(corrplot)
+#library(corrplot)
 library(caret)
-library(tidyverse)
-library(tidyquant)
-library(tidymodels)
+#library(tidyverse)
+#library(tidyquant)
+#library(tidymodels)
 library(ggplot2)
-library(gganimate)
-library(ggrepel)
+#library(gganimate)
+#library(ggrepel)
 library(ggdist)
-library(ggthemes)
-library(RColorBrewer)
+#library(ggthemes)
+#library(RColorBrewer)
 library(knitr)
 library(plotly)
 library(htmlwidgets)
@@ -25,24 +25,24 @@ library(stats)
 library(coefplot)
 library(rpart)
 library(rpart.plot)
-library(useful)
-library(xgboost)
-library(gmodels)
+#library(useful)
+#library(xgboost)
+#library(gmodels)
 library(rstudioapi)
-library(datasets) 
+#library(datasets) 
 library(caTools)
-library(party)
-library(magrittr)
+#library(party)
+#library(magrittr)
 library(Boruta)
-library(gridExtra)
+#library(gridExtra)
 library(randomForest)
-library(DiagrammeR)
-library(glmnet)
-library(C50)
+#library(DiagrammeR)
+#library(glmnet)
+#library(C50)
 library(plotROC)
 library(ROCR)
 library(OptimalCutpoints)
-library(e1071)
+#library(e1071)
 library(ROSE)
 library(class)
 
@@ -496,12 +496,6 @@ opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", dat
 summary(opt_cut)
 plot(opt_cut, which = 1)
 #AUC = 0.917 - model is really good, TPR = 0.831, FPR = 0.154
-
-
-
-
-
-
 
 
 
