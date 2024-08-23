@@ -356,31 +356,7 @@ print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null h
 ### -------------------------------Predictions Model 
 #-------------------------------------------------#
 
-#-------------------------------------------------#
-###-------------------Generalized Linear Regression 
-#-------------------------------------------------#
 
-#simple formula
-stroke_regression <- glm(stroke ~ ., data = stroke_new, family = binomial)
-summary(stroke_regression)
-
-#Coefficient Plot
-coefplot(stroke_regression)
-
-#Backward Stepwise Regression
-backward_model <- stats::step(stroke_regression, direction = "backward")
-#Both Directions Regression
-both_model <- stats::step(stroke_regression, direction = "both")
-
-#Full and Null step Procedure
-model.null <- glm(stroke ~ 1, data = stroke_new, family = binomial())
-model.full <- glm(stroke ~ gender + age + hypertension + heart_disease + avg_glucose_level, #I selected variables that make the most sense in the context of stroke occurrence based on existing research.
-                  data = stroke_new, family = binomial())
-stats::step(model.null, scope = list(upper = model.full), 
-     direction = "both", test = "Chisq", data = stroke_new)
-model.final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease, 
-                   data = stroke_new, family = binomial())
-summary(model.final)
 
 #Feature Ranking and Selection Algorithm
 #References:
@@ -430,6 +406,46 @@ train_data <- subset(rose_data, sample_data == TRUE)
 test_data <- subset(rose_data, sample_data == FALSE)
 prop.table(table(train_data$stroke)) 
 prop.table(table(test_data$stroke)) #data are more balanced!
+
+
+
+
+#-------------------------------------------------#
+###-------------------Generalized Linear Regression 
+#-------------------------------------------------#
+
+#simple formula
+stroke_regression <- glm(stroke ~ ., data = train_data, family = binomial(link = "logit"))
+summary(stroke_regression)
+
+#Coefficient Plot
+coefplot(stroke_regression)
+
+#Backward Stepwise Regression
+backward_model <- stats::step(stroke_regression, direction = "backward")
+#Both Directions Regression
+both_model <- stats::step(stroke_regression, direction = "both")
+
+#Full and Null step Procedure
+model.null <- glm(stroke ~ 1, data = train_data, family = binomial())
+model.full <- glm(stroke ~ age + hypertension + heart_disease + avg_glucose_level, #I selected variables that make the most sense in the context of stroke occurrence based on existing research.
+                  data = train_data, family = binomial())
+stats::step(model.null, scope = list(upper = model.full), 
+            direction = "both", test = "Chisq", data = train_data)
+model_final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease, 
+                   data = train_data, family = binomial())
+summary(model_final)
+
+#Prediction & Accuracy
+pred_glm <- predict(model_final, test_data, type="response")
+table(pred_glm)
+levels(test_data$stroke)
+class(test_data$stroke)
+pred_glm <- predict(model_final, newdata = test_data, type = "response")
+pred_glm <- ifelse(pred_glm > 0.5, "1", "0")
+pred_glm<- as.factor(pred_glm)
+confusionMatrix(test_data$stroke, pred_glm)
+
 
 
 #-------------------------------------------------#
