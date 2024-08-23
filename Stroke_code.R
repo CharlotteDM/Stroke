@@ -322,14 +322,15 @@ stroke_new <- subset(stroke_new, gender != "Other")
 
 stroke_new$stroke <- as.factor(stroke_new$stroke)
 
-
+#stroke_new$heart_disease <- as.numeric(stroke_new$heart_disease)
+#stroke_new$hypertension <- as.numeric(stroke_new$hypertension)
 
 #-------------------------------------------------#
 ###-----------------------------Chi square analysis
 #-------------------------------------------------#
 #new data frame for chi square
 new_dt <- stroke_new %>%
-  dplyr::select(gender, hypertension, stroke, smoking_status)
+  dplyr::select(gender, hypertension, stroke, smoking_status, heart_disease)
 
 #tables for chi square
 stroke_gender <- table(new_dt$gender,new_dt$stroke) 
@@ -340,10 +341,15 @@ print(hyperten_gender)
 
 hyperten_stroke <- table(new_dt$hypertension,new_dt$stroke) 
 
+heartd_stroke <- table(new_dt$heart_disease, new_dt$stroke)
+
 #chi square analysis
 print(chisq.test(stroke_gender))
 print(chisq.test(hyperten_gender))
-print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null hypothesis
+print(chisq.test(heartd_stroke)) # there are no evidences to reject the null hypothesis, 
+#there is a relationship between hypertension and stroke
+print(chisq.test(hyperten_stroke)) # there are no evidences to reject the null hypothesis, 
+#there is a relationship between hypertension and stroke
 
 
 #-------------------------------------------------#
@@ -393,11 +399,20 @@ boruta_plot #The plot indicates the importance of the "ever married" variable, b
 #-------------------------------------------------#
 ###-----------------------------------Splitting Data
 #-------------------------------------------------#
+str(stroke_new)
+
 set.seed(123)
 sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
 test_data <- subset(stroke_new, sample_data == FALSE)
 prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows also the huge unbalance
+str(test_data)
+train_data$age <- as.factor(train_data$age)
+test_data$age <- as.factor(test_data$age)
+train_data$hypertension <- as.factor(train_data$hypertension)
+test_data$hypertension <- as.factor(test_data$hypertension)
+train_data$heart_disease <- as.factor(train_data$heart_disease)
+test_data$heart_disease <- as.factor(test_data$heart_disease)
 
 
 #-------------------------------------------------#
@@ -406,18 +421,21 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - refle
 table(stroke_new$stroke)
 rose_data <- ROSE(stroke ~ ., data = stroke_new, seed = 123)$data
 table(rose_data$stroke)
+str(rose_data)
+
 
 set.seed(123)
 sample_data <- sample.split(rose_data, SplitRatio = 0.8)
 train_data <- subset(rose_data, sample_data == TRUE)
 test_data <- subset(rose_data, sample_data == FALSE)
-prop.table(table(train_data$stroke)) #data are more balanced!
-
+prop.table(table(train_data$stroke)) 
+prop.table(table(test_data$stroke)) #data are more balanced!
 
 
 #-------------------------------------------------#
 ###-------------Decision-Tree-------------------###
 #-------------------------------------------------#
+
 
 model_rpart <- rpart(stroke ~ ., data = train_data, method = "class")
 model_rpart
@@ -457,19 +475,24 @@ test_data_scaled <- scale(test_data[, -ncol(test_data)], center = attr(train_dat
 train_control <- trainControl(method = "cv", number = 10)
 knn_fit <- train(stroke ~ ., data = train_data, method = "knn", trControl = train_control, tuneLength = 10)
 print(knn_fit)
+
 #Training of data
 k_optimal <- knn_fit$bestTune$k
 knn_model <- knn(train = train_data_scaled, test = test_data_scaled, cl = train_data$stroke, k = k_optimal)
-#evaluation of model
-#confusion matrix
+
+#Evaluation of model
+#Confusion matrix
 confusion_matrix <- table(test_data$stroke, knn_model)
-#accuracy
+
+#Params
 accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
 print(confusion_matrix)
 print(paste("Accuracy:", round(accuracy, 2)))
-#other params
 confusion <- confusionMatrix(knn_model, as.factor(test_data$stroke))
 print(confusion)
+
+
+
 
 
 #-------------------------------------------------#
