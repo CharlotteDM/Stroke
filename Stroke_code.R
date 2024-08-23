@@ -437,21 +437,28 @@ model_final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disea
 summary(model_final)
 
 #Prediction & Accuracy
-pred_glm <- predict(model_final, test_data, type="response")
-table(pred_glm)
-levels(test_data$stroke)
-class(test_data$stroke)
 pred_glm <- predict(model_final, newdata = test_data, type = "response")
 pred_glm <- ifelse(pred_glm > 0.5, "1", "0")
 pred_glm<- as.factor(pred_glm)
-confusionMatrix(test_data$stroke, pred_glm)
+cm_glm <- confusionMatrix(test_data$stroke, pred_glm)
+print(cm_glm)
+
+pred_table_glm <- table(prediction = pred_glm, real_data = test_data$stroke) 
+pred_table_glm
+accuracy_glm <- sum(diag(pred_table)) / sum(pred_table) 
+accuracy_glm #Accuracy of the GLM is .
+print(paste('Accuracy for GLM is found to be', round(accuracy_glm, 2)))
+
+#Other params
+sensitivity_glm <- cm_glm$byClass["Sensitivity"]
+specificity_glm <- cm_glm$byClass["Specificity"]
+print(paste('Sensitivity for test is found to be', round(sensitivity_glm, 2), "and specificity is", round(specificity_glm, 2)))
 
 
 
 #-------------------------------------------------#
 ###-------------Decision-Tree-------------------###
 #-------------------------------------------------#
-
 
 model_rpart <- rpart(stroke ~ ., data = train_data, method = "class")
 model_rpart
@@ -472,13 +479,15 @@ preds<- as.factor(preds)
 confMatrix <- confusionMatrix(test_data$stroke, preds)
 print(confMatrix)
 
-#Params
+#Other params
 accuracy_decisiontree <- sum(diag(pred_table)) / sum(pred_table) 
 accuracy_decisiontree #Accuracy of the Decision Tree Model is .
 print(paste('Accuracy for test is found to be', round(accuracy_decisiontree, 2)))
 sensitivity <- confMatrix$byClass["Sensitivity"]
 specificity <- confMatrix$byClass["Specificity"]
 print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
+
+
 
 #-------------------------------------------------#
 ###-------------KNN Model-----------------------###
