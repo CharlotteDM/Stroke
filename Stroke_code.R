@@ -394,23 +394,13 @@ sample_data <- sample.split(stroke_new, SplitRatio = 0.8)
 train_data <- subset(stroke_new, sample_data == TRUE)
 test_data <- subset(stroke_new, sample_data == FALSE)
 prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - reflects the actual distribution of the result in the entire study group, but shows also the huge unbalance
-#str(test_data)
-#train_data$age <- as.factor(train_data$age)
-#test_data$age <- as.factor(test_data$age)
-#train_data$hypertension <- as.factor(train_data$hypertension)
-#test_data$hypertension <- as.factor(test_data$hypertension)
-#train_data$heart_disease <- as.factor(train_data$heart_disease)
-#test_data$heart_disease <- as.factor(test_data$heart_disease)
-
-
-
-
 
 
 #-------------------------------------------------#
 ###-----Data Balancing with Package ROSE--------###
 #-------------------------------------------------#
-#tu zapisz nazyw kolumn as factor przed balansownaiem rose
+
+#saving variables as factors so that they do not turn into quantitative variables after using the rose function
 str(stroke_new)
 stroke_new$hypertension <- as.factor(stroke_new$hypertension)
 stroke_new$heart_disease <- as.factor(stroke_new$heart_disease)
@@ -419,7 +409,6 @@ stroke_new$ever_married <- as.factor(stroke_new$ever_married)
 stroke_new$work_type <- as.factor(stroke_new$work_type)
 stroke_new$Residence_type <- as.factor(stroke_new$Residence_type)
 stroke_new$smoking_status <- as.factor(stroke_new$smoking_status)
-
 
 rose_data <- ROSE(stroke ~ ., data = stroke_new, seed = 123)$data
 table(rose_data$stroke)
@@ -433,10 +422,7 @@ test_data_r <- subset(rose_data, sample_data_r == FALSE)
 prop.table(table(train_data_r$stroke)) 
 prop.table(table(test_data_r$stroke)) #data are more balanced!
 
-#train_data$hypertension <- as.factor(train_data$hypertension)
-#train_data$heart_disease <- as.factor(train_data$heart_disease)
-#test_data$hypertension <- as.factor(test_data$hypertension)
-#test_data$heart_disease <- as.factor(test_data$heart_disease)
+
 
 
 #-------------------------------------------------#
@@ -444,10 +430,12 @@ prop.table(table(test_data_r$stroke)) #data are more balanced!
 #-------------------------------------------------#
 
 #simple formula
-stroke_regression <- glm(stroke ~ ., data = train_data, family = binomial(link = "logit"))
+stroke_regression <- glm(stroke ~ ., data = train_data, 
+                         family = binomial(link = "logit"))
 summary(stroke_regression)
 
-stroke_regression_r <- glm(stroke ~ ., data = train_data_r, family = binomial(link = "logit"))
+stroke_regression_r <- glm(stroke ~ ., data = train_data_r, 
+                           family = binomial(link = "logit"))
 summary(stroke_regression_r)
 
 
@@ -604,62 +592,9 @@ print(paste('Sensitivity for test is found to be', round(sensitivity_r, 2), "and
 
 
 #-------------------------------------------------#
-###-------------KNN Model-----------------------###
+###------------------------------------###
 #-------------------------------------------------#
 
-#standardization of data 
-class(train_data)
-train_data_scaled <- scale(train_data[, -ncol(train_data)])  
-test_data_scaled <- scale(test_data[, -ncol(test_data)], center = attr(train_data_scaled, "scaled:center"), scale = attr(train_data_scaled, "scaled:scale"))
-
-train_control <- trainControl(method = "cv", number = 10)
-knn_fit <- train(stroke ~ ., data = train_data, method = "knn", trControl = train_control, tuneLength = 10)
-print(knn_fit)
-
-#Training of data
-k_optimal <- knn_fit$bestTune$k
-knn_model <- knn(train = train_data_scaled, test = test_data_scaled, cl = train_data$stroke, k = k_optimal)
-
-#Evaluation of model
-#Confusion matrix
-confusion_matrix <- table(test_data$stroke, knn_model)
-
-#Params
-accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
-print(confusion_matrix)
-print(paste("Accuracy:", round(accuracy, 2)))
-confusion <- confusionMatrix(knn_model, as.factor(test_data$stroke))
-print(confusion)
-
-
-
-#after sampling KNN ni chuja ni eidzie
-
-
-#standardization of data 
-class(train_data_r)
-
-train_data_scaled_r <- scale(train_data_r[, -ncol(train_data_r)])  
-test_data_scaled <- scale(test_data[, -ncol(test_data)], center = attr(train_data_scaled, "scaled:center"), scale = attr(train_data_scaled, "scaled:scale"))
-
-train_control <- trainControl(method = "cv", number = 10)
-knn_fit <- train(stroke ~ ., data = train_data, method = "knn", trControl = train_control, tuneLength = 10)
-print(knn_fit)
-
-#Training of data
-k_optimal <- knn_fit$bestTune$k
-knn_model <- knn(train = train_data_scaled, test = test_data_scaled, cl = train_data$stroke, k = k_optimal)
-
-#Evaluation of model
-#Confusion matrix
-confusion_matrix <- table(test_data$stroke, knn_model)
-
-#Params
-accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
-print(confusion_matrix)
-print(paste("Accuracy:", round(accuracy, 2)))
-confusion <- confusionMatrix(knn_model, as.factor(test_data$stroke))
-print(confusion)
 
 
 
