@@ -189,17 +189,20 @@ ggplotly(plot_age_bmi)
 
 
 #plot: Age and Average Glucose Level and Stroke Occurrence
-plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level, color = as.factor(stroke)))+
+plot_age_gluc <- ggplot(data = stroke_plots, aes(x = age, y = avg_glucose_level, 
+                                                 color = as.factor(stroke)))+
   geom_point(alpha = 0.5) +
   scale_color_brewer(palette="Set2") +
   stat_smooth(aes(group = 1), method = "lm", formula = y ~ x, se = FALSE) +
-  labs(title="Age & Average Glucose Level and Stroke Occurrence", x="Age", y = "Average Glucose Level (mg/dL)", 
+  labs(title="Age & Average Glucose Level and Stroke Occurrence", x="Age", 
+       y = "Average Glucose Level (mg/dL)", 
        colour = "Stroke") +
-  theme(
-    plot.title = element_text(color = "darkgreen", size = 15, face = "bold", hjust = 0.5),
+  theme(plot.title = element_text(color = "darkgreen", size = 15, 
+                                  face = "bold", hjust = 0.5),
     axis.title.x = element_text(color = "darkgreen", size = 12, face = "bold"),
     axis.title.y = element_text(color = "darkgreen", size = 12, face = "bold"),
-    legend.title = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5),
+    legend.title = element_text(color = "darkgreen", size = 10, 
+                                face = "bold", hjust = 0.5),
     legend.background = element_rect(fill = "white", colour = "darkgreen")) 
 ggplotly(plot_age_gluc) 
 
@@ -228,11 +231,14 @@ print(stroke_hypertens)
 
 
 #ggplot - glucose level and bmi
-plot_gluc_bmi <- ggplot(data = stroke_plots, aes(x = avg_glucose_level, y = bmi, color = as.factor(smoking_status))) +
+plot_gluc_bmi <- ggplot(data = stroke_plots, aes(x = avg_glucose_level, 
+                                                 y = bmi, 
+                                                 color = as.factor(smoking_status))) +
   geom_point(alpha = 0.5) +
   scale_color_brewer(palette="Set1") +
   stat_smooth(aes(group = 1), method = "lm", formula = y ~ x, se = FALSE) +
-  labs(title="Average Glucose Level & BMI", x="Average Glucose Level", y = "BMI", colour = "Status of smoking") +
+  labs(title="Average Glucose Level & BMI", x="Average Glucose Level", 
+       y = "BMI", colour = "Status of smoking") +
   theme(
     plot.title = element_text(color = "navy", size = 15, face = "bold"),
     axis.title.x = element_text(color = "navy", size = 13, face = "bold"),
@@ -242,7 +248,8 @@ ggplotly(plot_gluc_bmi)
 
 
 #boxplot - glucose level 
-box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), y=avg_glucose_level), color = stroke) + 
+box_glucose <- ggplot(stroke_plots, aes(x=as.character(stroke), 
+                                        y=avg_glucose_level), color = stroke) + 
   geom_boxplot(show.legend = T) + 
   geom_jitter(shape=14, position=position_jitter(0.2), color = "lightblue") +
   labs(title="Stroke & Avg Glucose Level", x="Stroke", y = "Average Glucose Level") +
@@ -260,7 +267,8 @@ glucose_and_stroke <- stroke_plots %>%
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA, alpha = 0.4) + 
   ggdist::stat_dots(side = "left",justification = 1.1,binwidth = 0.25) +
-  labs(title="Gender & Avg Glucose Level in the Group of Patients with Stroke", x="Gender", y = "Average Glucose Level", color = "Gender") +
+  labs(title="Gender & Avg Glucose Level in the Group of Patients with Stroke", 
+       x="Gender", y = "Average Glucose Level", color = "Gender") +
   theme(
     plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
     axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
@@ -277,7 +285,8 @@ glucose_no_stroke <- stroke_plots %>%
   stat_halfeye(adjust = 0.5,justification = -0.2,.width = 0,point_colour = NA) +
   geom_boxplot(width = 0.11,outlier.color = NA,alpha = 0.4) + 
   ggdist::stat_dots(side = "left", justification = 1.1, binwidth = 0.25)+
-  labs(title="Gender & Avg Glucose Level with Patient with no Stroke", x="Gender", y = "Average Glucose Level", color = "Gender") +
+  labs(title="Gender & Avg Glucose Level with Patient with no Stroke", 
+       x="Gender", y = "Average Glucose Level", color = "Gender") +
   theme(
     plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
     axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
@@ -298,7 +307,7 @@ cor(stroke$age, stroke$heart_disease, use = "complete.obs")
 
 #correlation: age & glucose level
 cor(stroke$age, stroke$avg_glucose_level, use = "complete.obs")
-cor.test(stroke$age, stroke$avg_glucose_leve)
+cor.test(stroke$age, stroke$avg_glucose_level)
 cor.test(stroke$age, stroke$stroke)
 cor.test(stroke$avg_glucose_level, stroke$stroke)
 
@@ -314,11 +323,14 @@ stroke_new$work_type <- case_when(stroke_new$work_type == "children" ~ 0,
 
 stroke_new$Residence_type <- case_when(stroke_new$Residence_type == "Urban" ~ 1, stroke_new$Residence_type == "Rural" ~ 0)
 
-stroke_new$smoking_status <- case_when(stroke_new$smoking_status == "never smoked" ~ 0, stroke_new$smoking_status == "formerly smoked" ~ 1,
-stroke_new$smoking_status == "smokes" ~ 2,
-stroke_new$smoking_status == "Unknown" ~ 3)
+stroke_new$smoking_status <- case_when(
+  stroke_new$smoking_status == "never smoked" ~ 0, 
+  stroke_new$smoking_status == "formerly smoked" ~ 1,
+  stroke_new$smoking_status == "smokes" ~ 2,
+  stroke_new$smoking_status == "Unknown" ~ 3)
 
-stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,stroke$gender == "Male" ~ 1)
+stroke_new$gender <- case_when(stroke_new$gender == "Female" ~ 0,
+                               stroke$gender == "Male" ~ 1)
 stroke_new <- subset(stroke_new, gender != "Other")
 
 stroke_new$stroke <- as.factor(stroke_new$stroke)
@@ -327,7 +339,7 @@ stroke_new$stroke <- as.factor(stroke_new$stroke)
 ###-----------------------------Chi square analysis
 #-------------------------------------------------#
 #new data frame for chi square
-new_dt <- stroke_new %>%
+new_dt <- stroke_new%>%
   dplyr::select(gender, hypertension, stroke, smoking_status, heart_disease)
 
 #tables for chi square
@@ -363,9 +375,11 @@ boruta_output <- Boruta(stroke ~ ., data = stroke_new, doTrace = 0)
 rough_fix_mod <- TentativeRoughFix(boruta_output)
 boruta_signif <- getSelectedAttributes(rough_fix_mod) #the most important factors
 importances <- attStats(rough_fix_mod)
-importances <- importances[importances$decision != "Rejected", c("meanImp", "decision")]
+importances <- importances[importances$decision != "Rejected", 
+                           c("meanImp", "decision")]
 importances[order(-importances$meanImp), ] #the most important factors from the highest to the lowest importance
-boruta_plot <- plot(boruta_output, ces.axis = 0.3, las = 2, xlab = "", main = "Feature importance")
+boruta_plot <- plot(boruta_output, ces.axis = 0.3, las = 2, xlab = "", 
+                    main = "Feature importance")
 boruta_plot #The plot indicates the importance of the "ever married" variable, but this is an apparent correlation (being married correlates with age). 
 
 
