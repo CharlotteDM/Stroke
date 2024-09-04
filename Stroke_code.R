@@ -400,7 +400,7 @@ prop.table(table(train_data$stroke)) #95% without stroke, 5% with stroke - refle
 ###-----Data Balancing with Package ROSE--------###
 #-------------------------------------------------#
 
-#saving variables as factors so that they do not turn into quantitative variables after using the rose function
+#saving variables as factors so that they do not turn into quantitative variables after using the ROSE function
 str(stroke_new)
 stroke_new$hypertension <- as.factor(stroke_new$hypertension)
 stroke_new$heart_disease <- as.factor(stroke_new$heart_disease)
@@ -415,12 +415,13 @@ table(rose_data$stroke)
 str(rose_data)
 
 
+#splitting data
 set.seed(123)
-sample_data_r <- sample.split(rose_data, SplitRatio = 0.8)
-train_data_r <- subset(rose_data, sample_data_r == TRUE)
-test_data_r <- subset(rose_data, sample_data_r == FALSE)
-prop.table(table(train_data_r$stroke)) 
-prop.table(table(test_data_r$stroke)) #data are more balanced!
+sample_data <- sample.split(rose_data, SplitRatio = 0.8)
+train_data <- subset(rose_data, sample_data == TRUE)
+test_data <- subset(rose_data, sample_data == FALSE)
+prop.table(table(train_data$stroke)) 
+prop.table(table(test_data$stroke)) #data are more balanced!
 
 
 
@@ -429,22 +430,13 @@ prop.table(table(test_data_r$stroke)) #data are more balanced!
 ###-------------------Generalized Linear Regression 
 #-------------------------------------------------#
 
-#simple formula
+#simple formula of regression
 stroke_regression <- glm(stroke ~ ., data = train_data, 
-                         family = binomial(link = "logit"))
-summary(stroke_regression)
-
-stroke_regression_r <- glm(stroke ~ ., data = train_data_r, 
                            family = binomial(link = "logit"))
-summary(stroke_regression_r)
-
-
+summary(stroke_regression)
 
 #Coefficient Plot
 coefplot(stroke_regression)
-coefplot(stroke_regression_r)
-
-
 
 #Backward Stepwise Regression
 backward_model <- stats::step(stroke_regression, direction = "backward")
@@ -460,25 +452,6 @@ stats::step(model.null, scope = list(upper = model.full),
 model_final <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease, 
                    data = train_data, family = binomial())
 summary(model_final)
-
-
-
-#after sampling
-#Backward Stepwise Regression
-backward_model_r <- stats::step(stroke_regression_r, direction = "backward")
-#Both Directions Regression
-both_model_r <- stats::step(stroke_regression_r, direction = "both")
-#Full and Null step Procedure
-model.null_r <- glm(stroke ~ 1, data = train_data_r, family = binomial())
-model.full_r <- glm(stroke ~ age + hypertension + heart_disease + avg_glucose_level, #I selected variables that make the most sense in the context of stroke occurrence based on existing research.
-                  data = train_data_r, family = binomial())
-stats::step(model.null_r, scope = list(upper = model.full), 
-            direction = "both", test = "Chisq", data = train_data_r)
-model_final_r <- glm(stroke ~ age + avg_glucose_level + hypertension + heart_disease, 
-                   data = train_data_r, family = binomial())
-summary(model_final_r)
-
-
 
 
 
@@ -499,28 +472,6 @@ print(paste('Accuracy for GLM is found to be', round(accuracy_glm, 2)))
 sensitivity_glm <- cm_glm$byClass["Sensitivity"]
 specificity_glm <- cm_glm$byClass["Specificity"]
 print(paste('Sensitivity for test is found to be', round(sensitivity_glm, 2), "and specificity is", round(specificity_glm, 2)))
-
-
-
-#after sampling
-#Prediction & Accuracy
-pred_glm_r <- predict(model_final_r, newdata = test_data_r, type = "response")
-pred_glm_r <- ifelse(pred_glm_r > 0.5, "1", "0")
-pred_glm_r <- as.factor(pred_glm_r)
-cm_glm_r <- confusionMatrix(test_data_r$stroke, pred_glm_r)
-print(cm_glm_r)
-
-pred_table_glm_r <- table(prediction = pred_glm_r, real_data = test_data_r$stroke) 
-pred_table_glm_r
-accuracy_glm_r <- sum(diag(pred_table_glm_r)) / sum(pred_table_glm_r) 
-accuracy_glm_r #Accuracy of the GLM is .
-print(paste('Accuracy for GLM is found to be', round(accuracy_glm_r, 2)))
-
-#Other params
-sensitivity_glm_r <- cm_glm_r$byClass["Sensitivity"]
-specificity_glm_r <- cm_glm_r$byClass["Specificity"]
-print(paste('Sensitivity for test is found to be', round(sensitivity_glm_r, 2), "and specificity is", round(specificity_glm_r, 2)))
-
 
 
 
@@ -545,8 +496,6 @@ class(preds)
 class(test_data$stroke)
 levels(preds)
 levels(test_data$stroke)
-test_data$stroke <- as.factor(test_data$stroke)
-preds<- as.factor(preds)
 confMatrix <- confusionMatrix(test_data$stroke, preds)
 print(confMatrix)
 
@@ -558,32 +507,6 @@ sensitivity <- confMatrix$byClass["Sensitivity"]
 specificity <- confMatrix$byClass["Specificity"]
 print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
 
-
-
-
-#after sampling
-model_rpart_r <- rpart(stroke ~ ., data = train_data_r, method = "class")
-model_rpart_r
-rpart.plot(model_rpart_r)
-preds_r <- predict(model_rpart_r, newdata = test_data_r, type = "class")
-preds_r
-
-pred_table_r <- table(prediction = preds_r, real_data = test_data_r$stroke) 
-pred_table_r
-
-#Confusion Matrix
-class(preds_r)
-class(test_data_r$stroke)
-confMatrix_r <- confusionMatrix(test_data_r$stroke, preds_r)
-print(confMatrix_r)
-
-#Other params
-accuracy_decisiontree_r <- sum(diag(pred_table_r)) / sum(pred_table_r) 
-accuracy_decisiontree_r #Accuracy of the Decision Tree Model is .
-print(paste('Accuracy for test is found to be', round(accuracy_decisiontree_r, 2)))
-sensitivity_r <- confMatrix_r$byClass["Sensitivity"]
-specificity_r <- confMatrix_r$byClass["Specificity"]
-print(paste('Sensitivity for test is found to be', round(sensitivity_r, 2), "and specificity is", round(specificity_r, 2)))
 
 
 
@@ -620,53 +543,11 @@ confusionMatrix(pred_rf, test_data$stroke) #Accuracy = 0.83, Sensitivity = 0.81,
 #ROC Curve for Random Forest Model
 pred_rf_prob <- predict(stroke_rf, newdata = test_data, type = "prob")[, 2]
 pref_rf_df <- data.frame(pred = pred_rf_prob, truth = test_data$stroke)
-opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_rf_df, tag.healthy = "0")
+opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", 
+                             data=pref_rf_df, tag.healthy = "0")
 summary(opt_cut)
 plot(opt_cut, which = 1)
-#AUC = 0.917 - model is really good, TPR = 0.831, FPR = 0.154
-
-
-
-
-
-
-
-#after sampling 
-#model
-set.seed(123)
-stroke_rf_r <- randomForest(stroke ~ ., data=train_data_r, proximity = TRUE)
-print(stroke_rf_r) #out of bag error is 17.17%, the train data model accuracy is 82.83%, ntree = 500, mtry = 3
-plot(stroke_rf_r)
-
-#prediction on the test data
-pred_rf_r <- predict(stroke_rf_r, test_data_r)
-pred_rf_r <- as.factor(pred_rf_r)
-test_data_r$stroke <- as.factor(test_data_r$stroke)
-
-#confusion matrix
-confusionMatrix(pred_rf_r, test_data_r$stroke) #Accuracy = 0.83, Sensitivity = 0.78, Specificity = 0.87
-
-#ROC Curve for Random Forest Model
-pred_rf_prob_r <- predict(stroke_rf_r, newdata = test_data_r, type = "prob")[, 2]
-pref_rf_df_r <- data.frame(pred = pred_rf_prob_r, truth = test_data_r$stroke)
-opt_cut_r <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden", data=pref_rf_df_r, tag.healthy = "0")
-summary(opt_cut_r)
-plot(opt_cut_r, which = 1)
-#AUC = 0.914 - model is really good, TPR = , FPR = 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#AUC = 0.914 - model is really good, TPR = 0., FPR = 0.
 
 
 
