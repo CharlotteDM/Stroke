@@ -42,9 +42,8 @@ library(randomForest)
 library(plotROC)
 library(ROCR)
 library(OptimalCutpoints)
-#library(e1071)
+library(e1071)
 library(ROSE)
-library(smotefamily)
 library(class)
 
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -515,11 +514,30 @@ print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and s
 
 
 #-------------------------------------------------#
-###------------------------------------###
+###--------------------SVM----------------------###
 #-------------------------------------------------#
 
+#normalizing data
+preProcessParams <- preProcess(train_data, method = c("center", "scale"))
+trainData_scaled <- predict(preProcessParams, train_data)
+testData_scaled <- predict(preProcessParams, test_data)
 
+#building a model
+svm_model <- svm(stroke ~ ., data = trainData_scaled, 
+                 kernel = "radial", cost = 1, gamma = 0.1)
+print(svm_model)
 
+#prediction & evaluation
+predictions <- predict(svm_model, newdata = testData_scaled)
+conf_matrix <- confusionMatrix(predictions, testData_scaled$stroke)
+print(conf_matrix)
+
+#accuracy and other params
+print(conf_matrix$overall)  
+print(conf_matrix$byClass)
+sensitivity <- conf_matrix$byClass["Sensitivity"]
+specificity <- conf_matrix$byClass["Specificity"]
+print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
 
 
 
