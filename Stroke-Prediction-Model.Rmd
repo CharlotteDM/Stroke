@@ -45,7 +45,9 @@ library(C50)
 source("Stroke_code.R")
 ```
 
-#This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R"#. 
+##This is a report about prediction of stroke. Original data came from Coursera's Course - "Build and deploy a stroke prediction model using R". 
+
+***
 
 Stroke is a leading cause of death and disability worldwide, with significant public health implications. Some key facts about stroke:
 
@@ -160,6 +162,26 @@ There were also differences between the sexes and the average blood sugar levels
 plot(glucose_and_stroke)
 plot(glucose_no_stroke)
 ```
+
+***
+
+
+Generalized Linear Regression indicates a significant role for the variables: age and mean glucose level. This corresponds with the results of the above graphical analyses.
+
+``` {r, echo=FALSE, error=FALSE, warning = FALSE, tidy = TRUE}
+summary(stroke_regression) 
+```
+
+The Boruta method was used to check which independent variables were most significant in the context of the occurrence of stroke (i.e. the dependent variable).
+
+```{r echo=FALSE, warning=FALSE, boruta_plot=plot, dev='png', out.width="1500%"}
+plot(boruta_plot)
+```
+
+The plot indicates the importance of the "ever married" and "work type" variable, but this is an spurious correlation (being married and type of work correlate with age).
+
+
+
 
 
 

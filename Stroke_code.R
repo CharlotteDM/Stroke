@@ -511,8 +511,6 @@ print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and s
 
 
 
-
-
 #-------------------------------------------------#
 ###--------------------SVM----------------------###
 #-------------------------------------------------#
@@ -540,7 +538,6 @@ specificity <- conf_matrix$byClass["Specificity"]
 print(paste('Sensitivity for test is found to be', round(sensitivity, 2), "and specificity is", round(specificity, 2)))
 
 
-
 #-------------------------------------------------#
 ###-------------Random-Forest-------------------###
 #-------------------------------------------------#
@@ -565,7 +562,7 @@ opt_cut <- optimal.cutpoints(X = "pred", status = "truth", methods="Youden",
                              data=pref_rf_df, tag.healthy = "0")
 summary(opt_cut)
 plot(opt_cut, which = 1)
-#AUC = 0.914 - model is really good, TPR = 0., FPR = 0.
+#AUC = 0.914 - model is really good
 
 
 
