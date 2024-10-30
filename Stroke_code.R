@@ -46,6 +46,8 @@ library(e1071)
 library(ROSE)
 library(class)
 
+start_time <- proc.time()
+
 path <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(path)
 
@@ -267,12 +269,16 @@ glucose_and_stroke <- stroke_plots %>%
   geom_boxplot(width = 0.11,outlier.color = NA, alpha = 0.4) + 
   ggdist::stat_dots(side = "left",justification = 1.1,binwidth = 0.25) +
   labs(title="Gender & Avg Glucose Level in the Group of Patients with Stroke", 
-       x="Gender", y = "Average Glucose Level", color = "Gender") +
+       x="Gender", y = "Average Glucose Level", 
+       color = "Gender",
+       caption = "Source: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset") +
+
   theme(
-    plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
-    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
-    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold"),
-    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"),
+    plot.title = element_text(color = "darkgreen", size = 15, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold", hjust = 0.5),
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5),
+    plot.caption  = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5)
     )
 glucose_and_stroke
 
@@ -285,13 +291,18 @@ glucose_no_stroke <- stroke_plots %>%
   geom_boxplot(width = 0.11,outlier.color = NA,alpha = 0.4) + 
   ggdist::stat_dots(side = "left", justification = 1.1, binwidth = 0.25)+
   labs(title="Gender & Avg Glucose Level with Patient with no Stroke", 
-       x="Gender", y = "Average Glucose Level", color = "Gender") +
+       x="Gender", y = "Average Glucose Level",   
+       color = "Gender",
+       caption = "Source: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset") +
   theme(
-    plot.title = element_text(color = "darkgreen", size = 15, face = "bold"),
-    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold"),
-    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold"),
-    legend.title = element_text(color = "darkgreen", size = 10, face = "bold"))
+    plot.title = element_text(color = "darkgreen", size = 15, face = "bold",hjust = 0.5 ),
+    axis.title.x = element_text(color = "darkgreen", size = 13, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(color = "darkgreen", size = 13, face = "bold", hjust = 0.5),
+    legend.title = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5),
+    plot.caption  = element_text(color = "darkgreen", size = 10, face = "bold", hjust = 0.5))
 glucose_no_stroke
+
+grid.arrange(glucose_and_stroke, glucose_no_stroke, ncol = 2)
 
 
 #-------------------------------------------------#
@@ -590,3 +601,5 @@ plot(opt_cut, which = 1)
 # Wang, Q., Zhang, L., Li, Y., Tang, X., Yao, Y., & Fang, Q. (2022). Development of stroke predictive model in community-dwelling population: A longitudinal cohort study in Southeast China. Frontiers in Aging Neuroscience, 14, 1036215.
   #WHO
 #https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight
+time_taken <- proc.time() - start_time
+print(time_taken)
